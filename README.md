@@ -1,17 +1,5 @@
-Intellij / PhpStorm Plugin for PHP Improvements
+Consulo Plugin for PHP Improvements
 ========================
-
-[![Build Status](https://travis-ci.org/Haehnchen/idea-php-toolbox.svg?branch=master)](https://travis-ci.org/Haehnchen/idea-php-toolbox)
-[![Version](http://phpstorm.espend.de/badge/8133/version)](https://plugins.jetbrains.com/plugin/8133)
-[![Downloads](http://phpstorm.espend.de/badge/8133/downloads)](https://plugins.jetbrains.com/plugin/8133)
-[![Downloads last month](http://phpstorm.espend.de/badge/8133/last-month)](https://plugins.jetbrains.com/plugin/8133)
-[![Donate to this project using Paypal](https://img.shields.io/badge/paypal-donate-yellow.svg)](https://www.paypal.me/DanielEspendiller)
-
-Key         | Value
------------ | -----------
-Plugin Url  | http://plugins.jetbrains.com/plugin?pr=&pluginId=8133
-ID          | de.espend.idea.php.toolbox
-Doc x       | http://phpstorm.espend.de/php-toolbox
 
 ## Screenshots
 ![Php Toolbox PHPUnit](https://plugins.jetbrains.com/files/8133/screenshot_15579.png)
