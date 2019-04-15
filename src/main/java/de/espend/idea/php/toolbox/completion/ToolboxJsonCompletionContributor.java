@@ -1,6 +1,18 @@
 package de.espend.idea.php.toolbox.completion;
 
-import com.intellij.codeInsight.completion.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+
+import javax.swing.Icon;
+
+import org.jetbrains.annotations.NotNull;
+import com.intellij.codeInsight.completion.CompletionContributor;
+import com.intellij.codeInsight.completion.CompletionParameters;
+import com.intellij.codeInsight.completion.CompletionResultSet;
+import com.intellij.codeInsight.completion.CompletionType;
+import com.intellij.codeInsight.completion.InsertHandler;
+import com.intellij.codeInsight.completion.InsertionContext;
+import com.intellij.codeInsight.completion.PrefixMatcher;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.json.psi.*;
@@ -14,21 +26,17 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.completion.PhpLookupElement;
-import com.jetbrains.php.completion.insert.PhpReferenceInsertHandler;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
+import consulo.codeInsight.completion.CompletionProvider;
 import de.espend.idea.php.toolbox.PhpToolboxIcons;
 import de.espend.idea.php.toolbox.completion.dict.ToolboxJsonFileCompletionArguments;
-import de.espend.idea.php.toolbox.extension.*;
+import de.espend.idea.php.toolbox.extension.PhpToolboxProviderInterface;
+import de.espend.idea.php.toolbox.extension.SourceContributorInterface;
+import de.espend.idea.php.toolbox.extension.ToolboxJsonFileCompletion;
 import de.espend.idea.php.toolbox.provider.presentation.ProviderParameter;
 import de.espend.idea.php.toolbox.provider.presentation.ProviderPresentation;
 import de.espend.idea.php.toolbox.utils.ExtensionProviderUtil;
-import org.jetbrains.annotations.NotNull;
-
-import javax.swing.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -42,9 +50,9 @@ public class ToolboxJsonCompletionContributor extends CompletionContributor {
     public ToolboxJsonCompletionContributor() {
 
         // "provider":"twig_ext"
-        extend(CompletionType.BASIC, getNextToPropertyPattern("provider"), new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, getNextToPropertyPattern("provider"), new CompletionProvider() {
             @Override
-            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+            public void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
                 for (PhpToolboxProviderInterface provider : ExtensionProviderUtil.getProviders(completionParameters.getPosition().getProject())) {
 
@@ -88,9 +96,9 @@ public class ToolboxJsonCompletionContributor extends CompletionContributor {
         );
 
         // "function":"date"
-        extend(CompletionType.BASIC, getNextToPropertyPattern("function"), new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, getNextToPropertyPattern("function"), new CompletionProvider() {
             @Override
-            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+            public void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
                 for (String s : PhpIndex.getInstance(completionParameters.getPosition().getProject()).getAllFunctionNames(PrefixMatcher.ALWAYS_TRUE)) {
                     completionResultSet.addElement(LookupElementBuilder.create(s).withIcon(com.jetbrains.php.PhpIcons.METHOD));
                 }
@@ -98,9 +106,9 @@ public class ToolboxJsonCompletionContributor extends CompletionContributor {
         });
 
         // "class":"date"
-        extend(CompletionType.BASIC, getNextToPropertyPattern("class"), new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, getNextToPropertyPattern("class"), new CompletionProvider() {
             @Override
-            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
+            public void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
                 PhpIndex phpIndex = PhpIndex.getInstance(completionParameters.getPosition().getProject());
                 for (String className : phpIndex.getAllClassNames(resultSet.getPrefixMatcher())) {
 
@@ -116,9 +124,9 @@ public class ToolboxJsonCompletionContributor extends CompletionContributor {
         });
 
         // "registrar" => "parameters" => "foo"
-        extend(CompletionType.BASIC, getAfterPropertyAndInsideObjectPattern("parameters"), new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, getAfterPropertyAndInsideObjectPattern("parameters"), new CompletionProvider() {
             @Override
-            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
+			public void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
                 // @TODO: filter for provider name
                 for (PhpToolboxProviderInterface provider : ExtensionProviderUtil.getProviders(completionParameters.getPosition().getProject())) {
                     ProviderPresentation presentation = provider.getPresentation();
@@ -347,9 +355,9 @@ public class ToolboxJsonCompletionContributor extends CompletionContributor {
         }
     }
 
-    private class MyIconCompletionProvider extends CompletionProvider<CompletionParameters> {
+    private class MyIconCompletionProvider implements CompletionProvider {
         @Override
-        protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
+        public void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
 
             PsiElement position = completionParameters.getPosition();
             PsiElement parent = position.getParent();
@@ -424,8 +432,7 @@ public class ToolboxJsonCompletionContributor extends CompletionContributor {
         }
     }
 
-    private static class MyStringCompletionProvider extends CompletionProvider<CompletionParameters> {
-
+    private static class MyStringCompletionProvider implements CompletionProvider {
         private ToolboxJsonFileCompletionArguments.TYPE type;
         private String[] strings;
 
@@ -439,7 +446,7 @@ public class ToolboxJsonCompletionContributor extends CompletionContributor {
         }
 
         @Override
-        protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
+        public void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
             for (String s : strings) {
                 resultSet.addElement(
                     LookupElementBuilder.create(s).withIcon(PhpToolboxIcons.TOOLBOX)
