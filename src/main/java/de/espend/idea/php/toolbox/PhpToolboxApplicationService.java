@@ -1,23 +1,22 @@
 package de.espend.idea.php.toolbox;
 
+import java.io.File;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import com.intellij.openapi.application.PathManager;
-import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import de.espend.idea.php.toolbox.utils.JsonParseUtil;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.io.File;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-@State(name = "PHP Toolbox", storages = @Storage(file = "$APP_CONFIG$/php-toolbox.xml"))
-public class PhpToolboxApplicationService implements ApplicationComponent, PersistentStateComponent<PhpToolboxApplicationService> {
+@State(name = "PHP Toolbox", storages = @Storage("php-toolbox.xml"))
+public class PhpToolboxApplicationService implements PersistentStateComponent<PhpToolboxApplicationService> {
 
     final public static Logger LOG = Logger.getInstance("Symfony-Plugin");
 
@@ -25,14 +24,6 @@ public class PhpToolboxApplicationService implements ApplicationComponent, Persi
     public boolean listenAll = false;
     public int serverPort = 48734;
 
-    @Override
-    public void initComponent() {
-    }
-
-    @Override
-    public void disposeComponent() {
-
-    }
 
     public File[] getApplicationJsonFiles() {
 
@@ -42,18 +33,11 @@ public class PhpToolboxApplicationService implements ApplicationComponent, Persi
         }
 
         return file.listFiles(new JsonParseUtil.JsonFileFilter());
-
     }
 
     @NotNull
     public static String getApplicationFolder() {
         return PathManager.getConfigPath() + "/php-toolbox";
-    }
-
-    @NotNull
-    @Override
-    public String getComponentName() {
-        return "PhpToolboxApplicationService";
     }
 
     @Nullable

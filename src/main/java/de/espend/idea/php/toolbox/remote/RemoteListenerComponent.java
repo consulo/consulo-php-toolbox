@@ -1,19 +1,18 @@
 package de.espend.idea.php.toolbox.remote;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.ui.Messages;
 import com.sun.net.httpserver.HttpServer;
 import de.espend.idea.php.toolbox.PhpToolboxApplicationService;
-import org.jetbrains.annotations.NotNull;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class RemoteListenerComponent implements ApplicationComponent {
+public class RemoteListenerComponent implements Disposable {
 
     private final PhpToolboxApplicationService settings;
     private HttpServer server;
@@ -21,9 +20,7 @@ public class RemoteListenerComponent implements ApplicationComponent {
 
     public RemoteListenerComponent(PhpToolboxApplicationService settings) {
         this.settings = settings;
-    }
 
-    public void initComponent() {
         if(!settings.serverEnabled) {
             return;
         }
@@ -54,7 +51,8 @@ public class RemoteListenerComponent implements ApplicationComponent {
         listenerThread.start();
     }
 
-    public void disposeComponent() {
+    @Override
+    public void dispose() {
 
         if (listenerThread != null) {
             listenerThread.interrupt();
@@ -63,11 +61,5 @@ public class RemoteListenerComponent implements ApplicationComponent {
         if(server != null) {
             server.stop(0);
         }
-
-    }
-
-    @NotNull
-    public String getComponentName() {
-        return "RemoteStorage";
     }
 }

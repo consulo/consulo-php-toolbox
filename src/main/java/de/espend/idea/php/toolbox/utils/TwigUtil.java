@@ -4,9 +4,7 @@ import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiWhiteSpace;
-import com.jetbrains.twig.TwigLanguage;
-import com.jetbrains.twig.TwigTokenTypes;
-import com.jetbrains.twig.elements.TwigElementTypes;
+import consulo.twig.TwigLanguage;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

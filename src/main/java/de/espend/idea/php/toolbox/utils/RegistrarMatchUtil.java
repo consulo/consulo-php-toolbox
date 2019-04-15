@@ -1,9 +1,16 @@
 package de.espend.idea.php.toolbox.utils;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+
+import org.jetbrains.annotations.NotNull;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.psi.PsiElement;
-import com.intellij.util.containers.*;
+import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.containers.HashMap;
 import de.espend.idea.php.toolbox.PhpToolboxApplicationService;
 import de.espend.idea.php.toolbox.dict.json.JsonRegistrar;
@@ -11,9 +18,6 @@ import de.espend.idea.php.toolbox.dict.json.JsonSignature;
 import de.espend.idea.php.toolbox.dict.matcher.LanguageMatcherParameter;
 import de.espend.idea.php.toolbox.extension.LanguageRegistrarMatcherInterface;
 import de.espend.idea.php.toolbox.extension.PhpToolboxProviderInterface;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -29,7 +33,7 @@ public class RegistrarMatchUtil {
         }
 
         FileType fileType = psiElement.getContainingFile().getFileType();
-        String fileTypeName = fileType.getName();
+        String fileTypeName = fileType.getId();
 
         Collection<PhpToolboxProviderInterface> providers = null;
 
