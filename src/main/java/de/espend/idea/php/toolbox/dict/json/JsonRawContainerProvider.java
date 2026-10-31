@@ -1,7 +1,7 @@
 package de.espend.idea.php.toolbox.dict.json;
 
-import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.psi.PsiElement;
+import consulo.language.editor.completion.lookup.LookupElement;
+import consulo.language.psi.PsiElement;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import de.espend.idea.php.toolbox.completion.dict.JsonLookupElement;
@@ -12,8 +12,8 @@ import de.espend.idea.php.toolbox.navigation.locator.utils.TargetLocatorUtil;
 import de.espend.idea.php.toolbox.type.PhpToolboxTypeProviderArguments;
 import de.espend.idea.php.toolbox.type.PhpToolboxTypeProviderInterface;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,9 +31,8 @@ public class JsonRawContainerProvider extends PhpToolboxProviderAbstract impleme
         this.items = items;
     }
 
-    @NotNull
     @Override
-    public Collection<LookupElement> getLookupElements(@NotNull PhpToolboxCompletionContributorParameter parameter) {
+    public Collection<LookupElement> getLookupElements(PhpToolboxCompletionContributorParameter parameter) {
 
         Collection<LookupElement> elements = new ArrayList<>();
 
@@ -44,26 +43,25 @@ public class JsonRawContainerProvider extends PhpToolboxProviderAbstract impleme
         return elements;
     }
 
-    @NotNull
     @Override
-    public Collection<PsiElement> getPsiTargets(@NotNull PhpToolboxDeclarationHandlerParameter parameter) {
+    public Collection<PsiElement> getPsiTargets(PhpToolboxDeclarationHandlerParameter parameter) {
         Collection<PsiElement> psiElements = new ArrayList<>();
 
         for (JsonRawLookupElement item : items) {
-            if(item.getTarget() == null) {
+            String target = item.getTarget();
+            if(target == null) {
                 continue;
             }
 
             String lookupString = item.getLookupString();
             if(lookupString != null && lookupString.equals(parameter.getContents())) {
-                psiElements.addAll(TargetLocatorUtil.getTargetsBySignature(parameter, item.getTarget()));
+                psiElements.addAll(TargetLocatorUtil.getTargetsBySignature(parameter, target));
             }
         }
 
         return psiElements;
     }
 
-    @NotNull
     @Override
     public String getName() {
         return name;
@@ -71,7 +69,7 @@ public class JsonRawContainerProvider extends PhpToolboxProviderAbstract impleme
 
     @Nullable
     @Override
-    public Collection<PhpNamedElement> resolveParameter(@NotNull PhpToolboxTypeProviderArguments args) {
+    public Collection<PhpNamedElement> resolveParameter(PhpToolboxTypeProviderArguments args) {
 
         Collection<PhpNamedElement> elements = new ArrayList<>();
 

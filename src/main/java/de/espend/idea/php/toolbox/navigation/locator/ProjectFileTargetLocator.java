@@ -1,13 +1,13 @@
 package de.espend.idea.php.toolbox.navigation.locator;
 
-import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
+import consulo.annotation.component.ExtensionImpl;
+import consulo.util.lang.StringUtil;
+import consulo.virtualFileSystem.util.VirtualFileUtil;
+import consulo.virtualFileSystem.VirtualFile;
+import consulo.language.psi.PsiElement;
+import consulo.language.psi.PsiFile;
+import consulo.language.psi.PsiManager;
 import de.espend.idea.php.toolbox.extension.PhpToolboxTargetLocator;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,11 +16,11 @@ import java.util.Collections;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
+@ExtensionImpl
 public class ProjectFileTargetLocator implements PhpToolboxTargetLocator {
 
-    @NotNull
     @Override
-    public Collection<PsiElement> getTargets(@NotNull TargetLocatorParameter parameter) {
+    public Collection<PsiElement> getTargets(TargetLocatorParameter parameter) {
         if(!parameter.getTarget().startsWith("file://")) {
             return Collections.emptyList();
         }
@@ -28,7 +28,7 @@ public class ProjectFileTargetLocator implements PhpToolboxTargetLocator {
         String projectFile = parameter.getTarget().substring("file://".length());
         projectFile = StringUtil.trimStart(projectFile.replaceAll("\\\\+", "/").replaceAll("/+", "/"), "/");
 
-        VirtualFile relativeFile = VfsUtil.findRelativeFile(parameter.getProject().getBaseDir(), projectFile.split("/"));
+        VirtualFile relativeFile = VirtualFileUtil.findRelativeFile(parameter.getProject().getBaseDir(), projectFile.split("/"));
         if(relativeFile == null) {
             return Collections.emptyList();
         }

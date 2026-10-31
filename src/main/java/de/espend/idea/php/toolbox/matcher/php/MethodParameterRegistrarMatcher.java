@@ -1,8 +1,9 @@
 package de.espend.idea.php.toolbox.matcher.php;
 
-import com.intellij.openapi.fileTypes.FileType;
-import com.intellij.psi.PsiElement;
-import com.intellij.util.containers.ContainerUtil;
+import consulo.annotation.component.ExtensionImpl;
+import consulo.virtualFileSystem.fileType.FileType;
+import consulo.language.psi.PsiElement;
+import consulo.util.collection.ContainerUtil;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import de.espend.idea.php.toolbox.dict.json.JsonSignature;
@@ -11,16 +12,16 @@ import de.espend.idea.php.toolbox.extension.LanguageRegistrarMatcherInterface;
 import de.espend.idea.php.toolbox.matcher.php.container.ContainerConditions;
 import de.espend.idea.php.toolbox.symfony.util.MethodMatcher;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
+@ExtensionImpl
 public class MethodParameterRegistrarMatcher implements LanguageRegistrarMatcherInterface {
     @Override
-    public boolean matches(@NotNull LanguageMatcherParameter parameter) {
+    public boolean matches(LanguageMatcherParameter parameter) {
 
         PsiElement parent = parameter.getElement().getParent();
         if(!(parent instanceof StringLiteralExpression)) {
@@ -53,7 +54,7 @@ public class MethodParameterRegistrarMatcher implements LanguageRegistrarMatcher
         return false;
     }
 
-    public boolean supports(@NotNull FileType fileType) {
+    public boolean supports(FileType fileType) {
         return fileType == PhpFileType.INSTANCE;
     }
 }

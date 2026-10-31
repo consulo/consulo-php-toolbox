@@ -1,33 +1,32 @@
 package de.espend.idea.php.toolbox.utils;
 
-import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.extensions.ExtensionPointName;
-import com.intellij.openapi.project.DumbService;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Key;
-import com.intellij.openapi.util.io.StreamUtil;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.search.FilenameIndex;
-import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.util.CachedValue;
-import com.intellij.psi.util.CachedValueProvider;
-import com.intellij.psi.util.CachedValuesManager;
-import com.intellij.psi.util.PsiModificationTracker;
-import com.intellij.util.containers.ContainerUtil;
+import consulo.project.DumbService;
+import consulo.project.Project;
+import consulo.util.dataholder.Key;
+import consulo.util.io.StreamUtil;
+import consulo.language.psi.PsiFile;
+import consulo.language.psi.search.FilenameIndex;
+import consulo.language.psi.scope.GlobalSearchScope;
+import consulo.application.util.CachedValue;
+import consulo.application.util.CachedValueProvider;
+import consulo.application.util.CachedValuesManager;
+import consulo.language.psi.PsiModificationTracker;
+import consulo.language.psi.util.LanguageCachedValueUtil;
+import consulo.util.collection.ContainerUtil;
 import de.espend.idea.php.toolbox.PhpToolboxApplicationService;
 import de.espend.idea.php.toolbox.dict.json.*;
 import de.espend.idea.php.toolbox.extension.JsonStreamResource;
-import de.espend.idea.php.toolbox.extension.LanguageRegistrarMatcherInterface;
 import de.espend.idea.php.toolbox.extension.PhpToolboxProviderInterface;
 import de.espend.idea.php.toolbox.extension.SourceContributorInterface;
 import de.espend.idea.php.toolbox.extension.cache.JsonFileCache;
 import de.espend.idea.php.toolbox.matcher.php.container.ContainerConditions;
 import de.espend.idea.php.toolbox.provider.SourceProvider;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -35,40 +34,24 @@ import java.util.*;
  */
 public class ExtensionProviderUtil {
 
-    private static final ExtensionPointName<PhpToolboxProviderInterface> TOOLBOX_PROVIDER_EP = new ExtensionPointName<>(
-        "de.espend.idea.php.toolbox.extension.PhpToolboxProviderInterface"
-    );
-
-    private static final ExtensionPointName<SourceContributorInterface> SOURCE_CONTRIBUTOR_EP = new ExtensionPointName<>(
-        "de.espend.idea.php.toolbox.extension.SourceContributorInterface"
-    );
-
-    public static final ExtensionPointName<LanguageRegistrarMatcherInterface> REGISTRAR_MATCHER = new ExtensionPointName<>(
-        "de.espend.idea.php.toolbox.extension.LanguageRegistrarMatcher"
-    );
-
-    private static final ExtensionPointName<JsonStreamResource> STREAM_RESOURCES = new ExtensionPointName<>(
-        "de.espend.idea.php.toolbox.extension.JsonStreamResource"
-    );
-
     private static final Object STREAM_RESOURCES_LOCK = new Object();
 
     final private static JsonFileCache APPLICATION_CACHE = new JsonFileCache();
+    @Nullable
     private static Collection<JsonConfigFile> RESOURCE_FILES = null;
 
-    private static final Key<CachedValue<Collection<JsonRegistrar>>> TYPE_CACHE = new Key<>("PHP_TOOLBOX_TYPE_CACHE");
-    private static final Key<CachedValue<Collection<PhpToolboxProviderInterface>>> PROVIDER_CACHE = new Key<>("PHP_TOOLBOX_PROVIDER_CACHE");
-    private static final Key<CachedValue<Collection<JsonConfigFile>>> CONFIGS_CACHE = new Key<>("PHP_TOOLBOX_CONFIGS");
-    private static final Key<CachedValue<Collection<JsonConfigFile>>> CONFIGS_CACHE_INDEX = new Key<>("PHP_TOOLBOX_CONFIGS_INDEX");
-    private static final Key<CachedValue<Collection<JsonRegistrar>>> REGISTRAR_CACHE = new Key<>("PHP_TOOLBOX_REGISTRAR");
+    private static final Key<CachedValue<Collection<JsonRegistrar>>> TYPE_CACHE = Key.create("PHP_TOOLBOX_TYPE_CACHE");
+    private static final Key<CachedValue<Collection<PhpToolboxProviderInterface>>> PROVIDER_CACHE = Key.create("PHP_TOOLBOX_PROVIDER_CACHE");
+    private static final Key<CachedValue<Collection<JsonConfigFile>>> CONFIGS_CACHE = Key.create("PHP_TOOLBOX_CONFIGS");
+    private static final Key<CachedValue<Collection<JsonConfigFile>>> CONFIGS_CACHE_INDEX = Key.create("PHP_TOOLBOX_CONFIGS_INDEX");
+    private static final Key<CachedValue<Collection<JsonRegistrar>>> REGISTRAR_CACHE = Key.create("PHP_TOOLBOX_REGISTRAR");
 
     @Nullable
-    public static PhpToolboxProviderInterface getProvider(@NotNull Project project, final @NotNull String key) {
+    public static PhpToolboxProviderInterface getProvider(Project project, final String key) {
         return ContainerUtil.find(getProviders(project), provider -> key.equalsIgnoreCase(provider.getName()));
     }
 
-    @NotNull
-    synchronized public static Collection<PhpToolboxProviderInterface> getProviders(final @NotNull Project project) {
+    synchronized public static Collection<PhpToolboxProviderInterface> getProviders(final Project project) {
         CachedValue<Collection<PhpToolboxProviderInterface>> cache = project.getUserData(PROVIDER_CACHE);
 
         if(cache == null) {
@@ -80,13 +63,11 @@ public class ExtensionProviderUtil {
         return cache.getValue();
     }
 
-    @NotNull
-    public static Collection<PhpToolboxProviderInterface> getProvidersInner(@NotNull Project project) {
-        PhpToolboxApplicationService phpToolboxApplicationService = ServiceManager.getService(PhpToolboxApplicationService.class);
+    public static Collection<PhpToolboxProviderInterface> getProvidersInner(Project project) {
+        PhpToolboxApplicationService phpToolboxApplicationService = PhpToolboxApplicationService.getInstance(project);
 
-        Collection<PhpToolboxProviderInterface> providers = new ArrayList<>(
-            Arrays.asList(TOOLBOX_PROVIDER_EP.getExtensions())
-        );
+        Collection<PhpToolboxProviderInterface> providers = new ArrayList<>();
+        project.getApplication().getExtensionPoint(PhpToolboxProviderInterface.class).forEachExtensionSafe(providers::add);
 
         for (Map.Entry<String, Collection<JsonRawLookupElement>> entry : ExtensionProviderUtil.getProviders(project, phpToolboxApplicationService).entrySet()) {
             providers.add(new JsonRawContainerProvider(entry.getKey(), entry.getValue()));
@@ -115,7 +96,8 @@ public class ExtensionProviderUtil {
 
                     if(!sourceProviders.containsKey(name)) {
                         sourceProviders.put(name, new ArrayList<>(Collections.singletonList(provider)));
-                    } else {
+                    }
+                    else {
                         sourceProviders.get(name).add(provider);
                     }
                 }
@@ -130,8 +112,8 @@ public class ExtensionProviderUtil {
 
         return providers;
     }
-    @NotNull
-    synchronized public static Collection<JsonRegistrar> getRegistrar(final @NotNull Project project, final @NotNull PhpToolboxApplicationService phpToolboxApplicationService) {
+
+    synchronized public static Collection<JsonRegistrar> getRegistrar(final Project project, final PhpToolboxApplicationService phpToolboxApplicationService) {
         CachedValue<Collection<JsonRegistrar>> cache = project.getUserData(REGISTRAR_CACHE);
 
         if(cache == null) {
@@ -143,8 +125,7 @@ public class ExtensionProviderUtil {
         return cache.getValue();
     }
 
-    @NotNull
-    private static Collection<JsonRegistrar> getRegistrarInner(@NotNull Project project, @NotNull PhpToolboxApplicationService phpToolboxApplicationService) {
+    private static Collection<JsonRegistrar> getRegistrarInner(Project project, PhpToolboxApplicationService phpToolboxApplicationService) {
         Collection<JsonRegistrar> jsonRegistrars = new ArrayList<>();
         for(JsonConfigFile jsonConfig: getJsonConfigs(project, phpToolboxApplicationService)) {
             jsonRegistrars.addAll(jsonConfig.getRegistrar());
@@ -153,8 +134,7 @@ public class ExtensionProviderUtil {
         return jsonRegistrars;
     }
 
-    @NotNull
-    synchronized public static Collection<JsonRegistrar> getTypes(final @NotNull Project project) {
+    synchronized public static Collection<JsonRegistrar> getTypes(final Project project) {
         CachedValue<Collection<JsonRegistrar>> cache = project.getUserData(TYPE_CACHE);
 
         if(cache == null) {
@@ -166,14 +146,9 @@ public class ExtensionProviderUtil {
         return cache.getValue();
     }
 
-    @NotNull
-    private static Collection<JsonRegistrar> getTypesInner(@NotNull Project project) {
+    private static Collection<JsonRegistrar> getTypesInner(Project project) {
         Collection<JsonRegistrar> jsonRegistrars = new ArrayList<>();
-        PhpToolboxApplicationService component = ServiceManager.getService(PhpToolboxApplicationService.class);
-        if(component == null) {
-            return jsonRegistrars;
-        }
-
+        PhpToolboxApplicationService component = PhpToolboxApplicationService.getInstance(project);
         for(JsonConfigFile jsonConfig: getJsonConfigs(project, component)) {
             Collection<JsonRegistrar> registrar = jsonConfig.getRegistrar();
             for (JsonRegistrar jsonRegistrar : registrar) {
@@ -192,7 +167,6 @@ public class ExtensionProviderUtil {
         return jsonRegistrars;
     }
 
-    @NotNull
     public static Map<String, Collection<JsonRawLookupElement>> getProviders(Project project, PhpToolboxApplicationService phpToolboxApplicationService) {
         Map<String, Collection<JsonRawLookupElement>> providers = new HashMap<>();
         for(JsonConfigFile jsonConfig: getJsonConfigs(project, phpToolboxApplicationService)) {
@@ -202,7 +176,7 @@ public class ExtensionProviderUtil {
         return providers;
     }
 
-    synchronized public static Collection<JsonConfigFile> getJsonConfigs(final @NotNull Project project, final @NotNull PhpToolboxApplicationService phpToolboxApplicationService) {
+    synchronized public static Collection<JsonConfigFile> getJsonConfigs(final Project project, final PhpToolboxApplicationService phpToolboxApplicationService) {
         CachedValue<Collection<JsonConfigFile>> cache = project.getUserData(CONFIGS_CACHE);
 
         if(cache == null) {
@@ -221,10 +195,9 @@ public class ExtensionProviderUtil {
                     Collection<JsonConfigFile> jsonConfigFiles1 = new ArrayList<>();
 
                     for (final PsiFile psiFile : FilenameIndex.getFilesByName(project, ".ide-toolbox.metadata.json", GlobalSearchScope.allScope(project))) {
-                        JsonConfigFile cachedValue = CachedValuesManager.getCachedValue(psiFile, () -> new CachedValueProvider.Result<>(
+                        JsonConfigFile cachedValue = LanguageCachedValueUtil.getCachedValue(psiFile, () -> new CachedValueProvider.Result<>(
                             JsonParseUtil.getDeserializeConfig(psiFile.getText()),
-                            psiFile,
-                            psiFile.getVirtualFile()
+                            psiFile
                         ));
 
                         if(cachedValue != null) {
@@ -243,8 +216,7 @@ public class ExtensionProviderUtil {
         return jsonConfigFiles;
     }
 
-    @NotNull
-    synchronized private static Collection<JsonConfigFile> getJsonConfigsInner(@NotNull Project project, @NotNull PhpToolboxApplicationService phpToolboxApplicationService) {
+    synchronized private static Collection<JsonConfigFile> getJsonConfigsInner(Project project, PhpToolboxApplicationService phpToolboxApplicationService) {
         Collection<JsonConfigFile> jsonConfigFiles = new ArrayList<>();
 
         synchronized (APPLICATION_CACHE) {
@@ -252,25 +224,25 @@ public class ExtensionProviderUtil {
         }
 
         // resources files by plugins
-        jsonConfigFiles.addAll(getResourceFiles());
+        jsonConfigFiles.addAll(getResourceFiles(project));
 
         return jsonConfigFiles;
     }
 
-    @NotNull
-    private static Collection<JsonConfigFile> getResourceFiles() {
+    private static Collection<JsonConfigFile> getResourceFiles(Project project) {
         synchronized (STREAM_RESOURCES_LOCK) {
             if(RESOURCE_FILES != null) {
                 return RESOURCE_FILES;
             }
 
             Collection<JsonConfigFile> files = new ArrayList<>();
-            for (JsonStreamResource resource : STREAM_RESOURCES.getExtensions()) {
-                for (InputStream stream : resource.getInputStreams()) {
+            project.getApplication().getExtensionPoint(JsonStreamResource.class).forEachExtensionSafe(resource -> {
+                for (InputStream inputStream : resource.getInputStreams()) {
                     String contents;
-                    try {
-                        contents = StreamUtil.readText(stream, "UTF-8");
-                    } catch (IOException e) {
+                    try (InputStream stream = inputStream) {
+                        contents = StreamUtil.readText(stream, StandardCharsets.UTF_8);
+                    }
+                    catch (IOException e) {
                         continue;
                     }
 
@@ -279,20 +251,21 @@ public class ExtensionProviderUtil {
                         files.add(config);
                     }
                 }
-            }
+            });
 
             return RESOURCE_FILES = files;
         }
     }
 
-    @NotNull
-    public static SourceContributorInterface[] getSourceContributors() {
-        return SOURCE_CONTRIBUTOR_EP.getExtensions();
+    public static List<SourceContributorInterface> getSourceContributors(Project project) {
+        List<SourceContributorInterface> contributors = new ArrayList<>();
+        project.getApplication().getExtensionPoint(SourceContributorInterface.class).forEachExtensionSafe(contributors::add);
+        return contributors;
     }
 
     @Nullable
-    public static SourceContributorInterface getSourceContributor(@NotNull String name) {
-        for (SourceContributorInterface sourceContributor : getSourceContributors()) {
+    public static SourceContributorInterface getSourceContributor(Project project, String name) {
+        for (SourceContributorInterface sourceContributor : getSourceContributors(project)) {
             if(name.equals(sourceContributor.getName())) {
                 return sourceContributor;
             }

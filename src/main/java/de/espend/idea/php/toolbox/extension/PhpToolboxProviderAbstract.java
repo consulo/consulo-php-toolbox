@@ -2,7 +2,7 @@ package de.espend.idea.php.toolbox.extension;
 
 import de.espend.idea.php.toolbox.provider.presentation.ProviderPresentation;
 import de.espend.idea.php.toolbox.provider.presentation.SimpleProviderPresentation;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

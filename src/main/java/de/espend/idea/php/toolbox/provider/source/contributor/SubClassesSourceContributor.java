@@ -1,15 +1,15 @@
 package de.espend.idea.php.toolbox.provider.source.contributor;
 
-import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.psi.PsiElement;
+import consulo.annotation.component.ExtensionImpl;
+import consulo.language.editor.completion.lookup.LookupElement;
+import consulo.language.editor.completion.lookup.LookupElementBuilder;
+import consulo.language.psi.PsiElement;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import de.espend.idea.php.toolbox.extension.SourceContributorInterface;
 import de.espend.idea.php.toolbox.provider.source.SourceContributorDeclarationHandlerParameter;
 import de.espend.idea.php.toolbox.provider.source.SourceContributorParameter;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,11 +18,11 @@ import java.util.Collections;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
+@ExtensionImpl
 public class SubClassesSourceContributor implements SourceContributorInterface {
 
-    @NotNull
     @Override
-    public Collection<LookupElement> getLookupElements(@NotNull SourceContributorParameter parameter) {
+    public Collection<LookupElement> getLookupElements(SourceContributorParameter parameter) {
         String sourceParameter = parameter.getSourceParameter();
         if(sourceParameter == null) {
             return Collections.emptyList();
@@ -38,9 +38,8 @@ public class SubClassesSourceContributor implements SourceContributorInterface {
         return lookupElements;
     }
 
-    @NotNull
     @Override
-    public Collection<PsiElement> getPsiTargets(@NotNull SourceContributorDeclarationHandlerParameter parameter) {
+    public Collection<PsiElement> getPsiTargets(SourceContributorDeclarationHandlerParameter parameter) {
         String contents = parameter.getHandlerParameter().getContents();
         if(StringUtils.isBlank(contents)) {
             return Collections.emptyList();
@@ -62,7 +61,6 @@ public class SubClassesSourceContributor implements SourceContributorInterface {
         return psiElements;
     }
 
-    @NotNull
     @Override
     public String getName() {
         return "sub_classes";

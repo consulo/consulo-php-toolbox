@@ -1,10 +1,12 @@
 package de.espend.idea.php.toolbox.utils;
 
-import com.intellij.patterns.ElementPattern;
-import com.intellij.patterns.PlatformPatterns;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiWhiteSpace;
-import consulo.twig.TwigLanguage;
+import consulo.language.pattern.ElementPattern;
+import consulo.language.pattern.PlatformPatterns;
+import consulo.language.psi.PsiElement;
+import consulo.language.psi.PsiWhiteSpace;
+import com.jetbrains.twig.TwigLanguage;
+import com.jetbrains.twig.TwigTokenTypes;
+import com.jetbrains.twig.elements.TwigElementTypes;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -37,6 +39,4 @@ public class TwigUtil {
             )
             .withLanguage(TwigLanguage.INSTANCE);
     }
-
-
 }

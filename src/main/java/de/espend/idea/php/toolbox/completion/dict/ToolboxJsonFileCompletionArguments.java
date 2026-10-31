@@ -1,9 +1,8 @@
 package de.espend.idea.php.toolbox.completion.dict;
 
-import com.intellij.codeInsight.completion.CompletionResultSet;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import de.espend.idea.php.toolbox.PhpToolboxIcons;
-import org.jetbrains.annotations.NotNull;
+import consulo.language.editor.completion.CompletionResultSet;
+import consulo.language.editor.completion.lookup.LookupElementBuilder;
+import de.espend.idea.php.toolbox.icon.PhpToolboxIconGroup;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -15,27 +14,23 @@ public class ToolboxJsonFileCompletionArguments {
         SIGNATURE_KEY, PROVIDER_KEY
     }
 
-    @NotNull
     private final TYPE type;
 
-    @NotNull
     private final CompletionResultSet resultSet;
 
-    public ToolboxJsonFileCompletionArguments(@NotNull TYPE type, @NotNull CompletionResultSet resultSet) {
+    public ToolboxJsonFileCompletionArguments(TYPE type, CompletionResultSet resultSet) {
         this.type = type;
         this.resultSet = resultSet;
     }
 
-    @NotNull
     public CompletionResultSet getResultSet() {
         return resultSet;
     }
 
-    public void addLookupString(@NotNull String lookup) {
-        resultSet.addElement(LookupElementBuilder.create(lookup).withIcon(PhpToolboxIcons.TOOLBOX));
+    public void addLookupString(String lookup) {
+        resultSet.addElement(LookupElementBuilder.create(lookup).withIcon(PhpToolboxIconGroup.toolbox()));
     }
 
-    @NotNull
     public TYPE getType() {
         return type;
     }

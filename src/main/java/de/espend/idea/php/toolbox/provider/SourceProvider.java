@@ -1,16 +1,16 @@
 package de.espend.idea.php.toolbox.provider;
 
-import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.psi.PsiElement;
+import consulo.language.editor.completion.lookup.LookupElement;
+import consulo.language.psi.PsiElement;
 import de.espend.idea.php.toolbox.completion.dict.PhpToolboxCompletionContributorParameter;
 import de.espend.idea.php.toolbox.dict.json.JsonProvider;
+import de.espend.idea.php.toolbox.dict.json.JsonProviderSource;
 import de.espend.idea.php.toolbox.extension.PhpToolboxProviderAbstract;
 import de.espend.idea.php.toolbox.extension.SourceContributorInterface;
 import de.espend.idea.php.toolbox.navigation.dict.PhpToolboxDeclarationHandlerParameter;
 import de.espend.idea.php.toolbox.provider.source.SourceContributorDeclarationHandlerParameter;
 import de.espend.idea.php.toolbox.provider.source.SourceContributorParameter;
 import de.espend.idea.php.toolbox.utils.ExtensionProviderUtil;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,23 +23,24 @@ public class SourceProvider extends PhpToolboxProviderAbstract {
     private final String name;
     private final Collection<JsonProvider> sourceProviders;
 
-    public SourceProvider(@NotNull String name, @NotNull Collection<JsonProvider> sourceProviders) {
+    public SourceProvider(String name, Collection<JsonProvider> sourceProviders) {
         this.name = name;
         this.sourceProviders = sourceProviders;
     }
 
-    @NotNull
     @Override
-    public Collection<LookupElement> getLookupElements(@NotNull PhpToolboxCompletionContributorParameter parameter) {
+    public Collection<LookupElement> getLookupElements(PhpToolboxCompletionContributorParameter parameter) {
 
         Collection<LookupElement> lookupElements = new ArrayList<>();
         SourceContributorParameter params = null;
         for (JsonProvider sourceProvider : sourceProviders) {
-            if(sourceProvider.getSource() == null || sourceProvider.getSource().getContributor() == null) {
+            JsonProviderSource source = sourceProvider.getSource();
+            String contributor = source != null ? source.getContributor() : null;
+            if(contributor == null) {
                 continue;
             }
 
-            SourceContributorInterface sourceContributor = ExtensionProviderUtil.getSourceContributor(sourceProvider.getSource().getContributor());
+            SourceContributorInterface sourceContributor = ExtensionProviderUtil.getSourceContributor(parameter.getProject(), contributor);
             if(sourceContributor == null) {
                 continue;
             }
@@ -54,18 +55,19 @@ public class SourceProvider extends PhpToolboxProviderAbstract {
         return lookupElements;
     }
 
-    @NotNull
     @Override
-    public Collection<PsiElement> getPsiTargets(@NotNull PhpToolboxDeclarationHandlerParameter parameter) {
+    public Collection<PsiElement> getPsiTargets(PhpToolboxDeclarationHandlerParameter parameter) {
 
         Collection<PsiElement> targets = new ArrayList<>();
         SourceContributorDeclarationHandlerParameter params = null;
         for (JsonProvider sourceProvider : sourceProviders) {
-            if(sourceProvider.getSource() == null || sourceProvider.getSource().getContributor() == null) {
+            JsonProviderSource source = sourceProvider.getSource();
+            String contributor = source != null ? source.getContributor() : null;
+            if(contributor == null) {
                 continue;
             }
 
-            SourceContributorInterface sourceContributor = ExtensionProviderUtil.getSourceContributor(sourceProvider.getSource().getContributor());
+            SourceContributorInterface sourceContributor = ExtensionProviderUtil.getSourceContributor(parameter.getProject(), contributor);
             if(sourceContributor == null) {
                 continue;
             }
@@ -80,7 +82,6 @@ public class SourceProvider extends PhpToolboxProviderAbstract {
         return targets;
     }
 
-    @NotNull
     @Override
     public String getName() {
         return this.name;

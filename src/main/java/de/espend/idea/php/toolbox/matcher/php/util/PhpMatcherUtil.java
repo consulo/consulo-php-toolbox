@@ -1,8 +1,8 @@
 package de.espend.idea.php.toolbox.matcher.php.util;
 
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.util.containers.ContainerUtil;
+import consulo.language.psi.PsiElement;
+import consulo.language.psi.util.PsiTreeUtil;
+import consulo.util.collection.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
 import de.espend.idea.php.toolbox.dict.json.JsonSignature;
@@ -10,7 +10,6 @@ import de.espend.idea.php.toolbox.matcher.php.container.ContainerConditions;
 import de.espend.idea.php.toolbox.symfony.Symfony2InterfacesUtil;
 import de.espend.idea.php.toolbox.symfony.utils.PhpElementsUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -21,7 +20,7 @@ import java.util.List;
  */
 public class PhpMatcherUtil {
 
-    public static boolean isMachingReturnArray(@NotNull Collection<JsonSignature> signatures, @NotNull PsiElement phpReturn) {
+    public static boolean isMachingReturnArray(Collection<JsonSignature> signatures, PsiElement phpReturn) {
 
         Function function = PsiTreeUtil.getParentOfType(phpReturn, Function.class);
         if(function == null) {
@@ -67,7 +66,7 @@ public class PhpMatcherUtil {
         return false;
     }
 
-    public static boolean matchesArraySignature(@NotNull  PsiElement parent, @NotNull Collection<JsonSignature> signatures) {
+    public static boolean matchesArraySignature( PsiElement parent, Collection<JsonSignature> signatures) {
         Collection<JsonSignature> functionSignatures = filterFunctionSignatures(signatures);
         if(functionSignatures.size() == 0) {
             return false;
@@ -75,7 +74,8 @@ public class PhpMatcherUtil {
 
         for (JsonSignature signature : functionSignatures) {
             // @TODO: there ways to merge this
-            if(PhpElementsUtil.isFunctionReference(parent, signature.getIndex(), signature.getFunction())) {
+            String function = signature.getFunction();
+            if(function != null && PhpElementsUtil.isFunctionReference(parent, signature.getIndex(), function)) {
                 return true;
             }
         }
@@ -86,8 +86,8 @@ public class PhpMatcherUtil {
     /**
      * Filter signatures with a valid "function" value
      */
-    @NotNull
-    public static Collection<JsonSignature> filterFunctionSignatures(@NotNull Collection<JsonSignature> signatures) {
+
+    public static Collection<JsonSignature> filterFunctionSignatures(Collection<JsonSignature> signatures) {
         return new HashSet<>(ContainerUtil.filter(signatures, ContainerConditions.FUNCTION_FILTER));
     }
 }

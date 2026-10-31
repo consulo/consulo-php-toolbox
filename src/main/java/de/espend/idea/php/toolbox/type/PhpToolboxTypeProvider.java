@@ -1,15 +1,14 @@
 package de.espend.idea.php.toolbox.type;
 
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Pair;
-import com.intellij.psi.PsiElement;
-import com.intellij.util.containers.ContainerUtil;
+import consulo.annotation.component.ExtensionImpl;
+import consulo.project.Project;
+import consulo.util.lang.Pair;
+import consulo.language.psi.PsiElement;
+import consulo.util.collection.ContainerUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
-import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider3;
+import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider4;
 import de.espend.idea.php.toolbox.PhpToolboxApplicationService;
 import de.espend.idea.php.toolbox.dict.json.JsonRawLookupElement;
 import de.espend.idea.php.toolbox.dict.json.JsonRegistrar;
@@ -20,17 +19,18 @@ import de.espend.idea.php.toolbox.symfony.Symfony2InterfacesUtil;
 import de.espend.idea.php.toolbox.type.utils.PhpTypeProviderUtil;
 import de.espend.idea.php.toolbox.utils.ExtensionProviderUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
-import static com.intellij.openapi.util.Pair.pair;
+import static consulo.util.lang.Pair.pair;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class PhpToolboxTypeProvider implements PhpTypeProvider3 {
+@ExtensionImpl
+public class PhpToolboxTypeProvider implements PhpTypeProvider4 {
 
     final static char TRIM_KEY = '\u0195';
 
@@ -81,8 +81,19 @@ public class PhpToolboxTypeProvider implements PhpTypeProvider3 {
         return null;
     }
 
+    @Nullable
+    @Override
+    public PhpType complete(String expression, Project project) {
+        return null;
+    }
+
     @Override
     public Collection<? extends PhpNamedElement> getBySignature(String expression, Set<String> visited, int depth, Project project) {
+        // consulo-php passes the full signature including our "#<key>" prefix
+        String keyPrefix = "#" + getKey();
+        if(expression.startsWith(keyPrefix)) {
+            expression = expression.substring(keyPrefix.length());
+        }
 
         // get back our original call
         // since phpstorm 7.1.2 we need to validate this
@@ -114,7 +125,7 @@ public class PhpToolboxTypeProvider implements PhpTypeProvider3 {
 
         Map<String, Collection<JsonRawLookupElement>> providerMap = ExtensionProviderUtil.getProviders(
             project,
-            ServiceManager.getService(PhpToolboxApplicationService.class)
+            PhpToolboxApplicationService.getInstance(project)
         );
 
         Set<Pair<String, Integer>> providers = getProviderNames(project, (Function) phpNamedElement);
@@ -151,7 +162,7 @@ public class PhpToolboxTypeProvider implements PhpTypeProvider3 {
         return elements;
     }
 
-    private Set<Pair<String, Integer>> getProviderNames(@NotNull Project project, @NotNull Function method) {
+    private Set<Pair<String, Integer>> getProviderNames(Project project, Function method) {
         Collection<JsonRegistrar> types = ExtensionProviderUtil.getTypes(project);
 
         Set<Pair<String, Integer>> providers = new HashSet<>();
@@ -175,7 +186,8 @@ public class PhpToolboxTypeProvider implements PhpTypeProvider3 {
                             break;
                         }
                     }
-                } else if(StringUtils.isNotBlank(sig.getFunction()) && funcName.equals(sig.getFunction())) {
+                }
+                else if(StringUtils.isNotBlank(sig.getFunction()) && funcName.equals(sig.getFunction())) {
                     // function condition
                     providers.add(pair(type.getProvider(), sig.getIndex()));
                     break;
@@ -189,8 +201,8 @@ public class PhpToolboxTypeProvider implements PhpTypeProvider3 {
     /**
      * Split possible multi index parameter "1#foobar|2#foobar"
      */
-    @NotNull
-    private Map<Integer, String> getParameters(@NotNull String parametersSignature, @NotNull PhpIndex phpIndex) {
+
+    private Map<Integer, String> getParameters(String parametersSignature, PhpIndex phpIndex) {
         Map<Integer, String> parameters = new HashMap<>();
 
         // "1#foobar|2#foobar"
@@ -203,7 +215,8 @@ public class PhpToolboxTypeProvider implements PhpTypeProvider3 {
             int i;
             try {
                 i = Integer.parseInt(split[0]);
-            } catch (NumberFormatException e) {
+            }
+            catch (NumberFormatException e) {
                 continue;
             }
 

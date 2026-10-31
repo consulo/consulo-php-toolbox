@@ -1,31 +1,40 @@
 package de.espend.idea.php.toolbox.dict.json;
 
 import com.google.gson.annotations.SerializedName;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import org.jspecify.annotations.Nullable;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class JsonRawLookupElement {
 
+    @Nullable
     @SerializedName("lookup_string")
     private String lookupString;
 
+    @Nullable
     @SerializedName("presentable_text")
     private String presentableText;
 
+    @Nullable
     @SerializedName("type_text")
     private String typeText;
 
+    @Nullable
     @SerializedName("tail_text")
     private String tailText;
 
+    @Nullable
     private String type;
 
+    @Nullable
     private String icon;
+
+    @Nullable
     private String target;
 
+    @Nullable
     public String getLookupString() {
         return lookupString;
     }
@@ -63,7 +72,7 @@ public class JsonRawLookupElement {
     public void setDefaultOptions(JsonRawLookupElement defaultOptions) {
 
         if(this.lookupString == null && defaultOptions.getLookupString() != null) {
-            this.lookupString = defaultOptions.getIcon();
+            this.lookupString = defaultOptions.getLookupString();
         }
 
         if(this.presentableText == null && defaultOptions.getPresentableText() != null) {
@@ -92,7 +101,7 @@ public class JsonRawLookupElement {
 
     }
 
-    public static JsonRawLookupElement create(@NotNull String lookupString) {
+    public static JsonRawLookupElement create(String lookupString) {
         JsonRawLookupElement element = new JsonRawLookupElement();
         element.lookupString = lookupString;
         return element;

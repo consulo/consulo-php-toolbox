@@ -1,15 +1,15 @@
 package de.espend.idea.php.toolbox.matcher.php.docTag;
 
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiReference;
-import com.intellij.psi.util.PsiTreeUtil;
+import consulo.language.psi.PsiElement;
+import consulo.language.psi.PsiReference;
+import consulo.language.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.PhpLangUtil;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocParamTag;
 import com.jetbrains.php.lang.psi.elements.*;
 import de.espend.idea.php.toolbox.symfony.util.ParameterBag;
 import de.espend.idea.php.toolbox.symfony.util.PsiElementUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,7 +20,7 @@ public class PhpDocUtil {
      * Collects all doc tag text for an index. does also visit also method implements cases
      */
     @Nullable
-    public static Collection<PhpDocParamTag> getDocTagsForScope(@NotNull PsiElement psiElement) {
+    public static Collection<PhpDocParamTag> getDocTagsForScope(PsiElement psiElement) {
 
         ParameterList parameterList = PsiTreeUtil.getParentOfType(psiElement, ParameterList.class);
         if (parameterList == null) {
@@ -68,7 +68,8 @@ public class PhpDocUtil {
                     }
                 }
             }
-        } else {
+        }
+        else {
             PhpDocParamTag docTag = methodParameter[currentIndex.getIndex()].getDocTag();
             if(docTag != null) {
                 phpDocParamTags.add(docTag);
@@ -78,22 +79,25 @@ public class PhpDocUtil {
         return phpDocParamTags;
     }
 
-    private static PsiReference getElementReference(PsiElement element) {
+    @Nullable
+    private static PsiReference getElementReference(@Nullable PsiElement element) {
         if (element instanceof NewExpression) {
             return ((NewExpression) element).getClassReference();
-        } else if (element instanceof FunctionReference) {
+        }
+        else if (element instanceof FunctionReference) {
             return element.getReference();
-        } else {
+        }
+        else {
             return null;
         }
     }
 
-    private static Method[] getImplementedMethods(@NotNull Method method) {
+    private static Method[] getImplementedMethods(Method method) {
         ArrayList<Method> items = getImplementedMethods(method.getContainingClass(), method, new ArrayList<>());
         return items.toArray(new Method[items.size()]);
     }
 
-    private static ArrayList<Method> getImplementedMethods(@Nullable PhpClass phpClass, @NotNull Method method, ArrayList<Method> implementedMethods) {
+    private static ArrayList<Method> getImplementedMethods(@Nullable PhpClass phpClass, Method method, ArrayList<Method> implementedMethods) {
         if (phpClass == null) {
             return implementedMethods;
         }

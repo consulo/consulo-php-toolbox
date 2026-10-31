@@ -1,27 +1,27 @@
 package de.espend.idea.php.toolbox.extension;
 
-import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.psi.PsiElement;
+import consulo.annotation.component.ComponentScope;
+import consulo.annotation.component.ExtensionAPI;
+import consulo.language.editor.completion.lookup.LookupElement;
+import consulo.language.psi.PsiElement;
 import de.espend.idea.php.toolbox.completion.dict.PhpToolboxCompletionContributorParameter;
 import de.espend.idea.php.toolbox.navigation.dict.PhpToolboxDeclarationHandlerParameter;
 import de.espend.idea.php.toolbox.provider.presentation.ProviderPresentation;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
+@ExtensionAPI(ComponentScope.APPLICATION)
 public interface PhpToolboxProviderInterface {
 
-    @NotNull
-    Collection<LookupElement> getLookupElements(@NotNull PhpToolboxCompletionContributorParameter parameter);
+    Collection<LookupElement> getLookupElements(PhpToolboxCompletionContributorParameter parameter);
 
-    @NotNull
-    Collection<PsiElement> getPsiTargets(@NotNull PhpToolboxDeclarationHandlerParameter parameter);
+    Collection<PsiElement> getPsiTargets(PhpToolboxDeclarationHandlerParameter parameter);
 
-    @NotNull
     String getName();
 
     @Nullable

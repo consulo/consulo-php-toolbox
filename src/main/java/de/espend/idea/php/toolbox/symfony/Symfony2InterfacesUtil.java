@@ -1,10 +1,10 @@
 package de.espend.idea.php.toolbox.symfony;
 
-import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiPolyVariantReference;
-import com.intellij.psi.PsiReference;
-import com.intellij.psi.ResolveResult;
+import consulo.project.Project;
+import consulo.language.psi.PsiElement;
+import consulo.language.psi.PsiPolyVariantReference;
+import consulo.language.psi.PsiReference;
+import consulo.language.psi.ResolveResult;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
@@ -12,8 +12,8 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import de.espend.idea.php.toolbox.symfony.utils.PhpElementsUtil;
 import de.espend.idea.php.toolbox.symfony.util.MethodMatcher;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -107,7 +107,6 @@ public class Symfony2InterfacesUtil {
         return false;
     }
 
-
     protected boolean isCallTo(PsiElement e, Method[] expectedMethods, int deepness) {
         if (!(e instanceof MethodReference)) {
             return false;
@@ -160,8 +159,8 @@ public class Symfony2InterfacesUtil {
      * Single resolve doesnt work if we have non unique class names in project context,
      * so try a multiResolve
      */
-    @Nullable
-    public static Method[] getMultiResolvedMethod(PsiReference psiReference) {
+
+    public static Method @Nullable [] getMultiResolvedMethod(PsiReference psiReference) {
 
         // class be unique in normal case, so try this first
         PsiElement resolvedReference = psiReference.resolve();
@@ -281,7 +280,7 @@ public class Symfony2InterfacesUtil {
 
     }
 
-    public boolean isInstanceOf(@NotNull PhpClass subjectClass, @NotNull PhpClass expectedClass) {
+    public boolean isInstanceOf(PhpClass subjectClass, PhpClass expectedClass) {
 
         // we have equal class instance, on non multiple classes with same name fallback to namespace and classname
         if (subjectClass == expectedClass || PhpElementsUtil.isEqualClassName(subjectClass, expectedClass)) {
@@ -322,8 +321,7 @@ public class Symfony2InterfacesUtil {
         return isCallTo(e, methods);
     }
 
-    @NotNull
-    private Method[] getExpectedMethods(@NotNull Project project, @NotNull String ClassInterfaceName, @NotNull String methodName) {
+    private Method[] getExpectedMethods(Project project, String ClassInterfaceName, String methodName) {
         Set<Method> methods = new HashSet<>();
 
         for (PhpClass phpClass : PhpIndex.getInstance(project).getAnyByFQN(ClassInterfaceName)) {
@@ -342,7 +340,7 @@ public class Symfony2InterfacesUtil {
                 methods.add(method);
             }
         }
-        
+
         return methods.toArray(new Method[methods.size()]);
     }
 

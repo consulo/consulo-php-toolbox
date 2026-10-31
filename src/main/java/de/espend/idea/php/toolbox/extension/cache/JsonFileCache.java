@@ -1,5 +1,6 @@
 package de.espend.idea.php.toolbox.extension.cache;
 
+import de.espend.idea.php.toolbox.PhpToolboxApplicationService;
 import de.espend.idea.php.toolbox.dict.json.JsonConfigFile;
 import de.espend.idea.php.toolbox.utils.JsonParseUtil;
 
@@ -21,9 +22,10 @@ public class JsonFileCache {
             if(!this.filesMTime.containsKey(file) || this.filesMTime.get(file) != lastModified) {
                 this.filesMTime.put(file, lastModified);
                 this.configs.put(file, JsonParseUtil.getDeserializeConfig(file));
-                System.out.println("new: " + file);
-            } else {
-                System.out.println("cached: " + file);
+                PhpToolboxApplicationService.LOG.debug("new: " + file);
+            }
+            else {
+                PhpToolboxApplicationService.LOG.debug("cached: " + file);
             }
         }
 
@@ -46,7 +48,7 @@ public class JsonFileCache {
                 this.configs.remove(cachedFile);
             }
 
-            System.out.println("clean: " + cachedFile);
+            PhpToolboxApplicationService.LOG.debug("clean: " + cachedFile);
 
         }
 

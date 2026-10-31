@@ -1,7 +1,7 @@
 package de.espend.idea.php.toolbox.dict.json;
 
 import com.google.gson.annotations.SerializedName;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,6 +26,7 @@ public class JsonProvider {
     @SerializedName("lookup_strings")
     private Collection<String> lookupStrings = new HashSet<>();
 
+    @Nullable
     private Collection<JsonRawLookupElement> myItems = null;
 
     @Nullable

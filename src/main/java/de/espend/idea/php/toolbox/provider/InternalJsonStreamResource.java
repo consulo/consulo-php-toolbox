@@ -1,8 +1,8 @@
 package de.espend.idea.php.toolbox.provider;
 
+import consulo.annotation.component.ExtensionImpl;
 import de.espend.idea.php.toolbox.extension.JsonStreamResource;
 import de.espend.idea.php.toolbox.utils.ExtensionProviderUtil;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -11,8 +11,9 @@ import java.util.Collection;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
+@ExtensionImpl
 public class InternalJsonStreamResource implements JsonStreamResource {
-    @NotNull
+
     @Override
     public Collection<InputStream> getInputStreams() {
         Collection<InputStream> inputStreams = new ArrayList<>();

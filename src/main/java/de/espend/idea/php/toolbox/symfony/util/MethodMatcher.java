@@ -1,11 +1,11 @@
 package de.espend.idea.php.toolbox.symfony.util;
 
-import com.intellij.psi.PsiElement;
+import consulo.language.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.*;
 import de.espend.idea.php.toolbox.symfony.Symfony2InterfacesUtil;
 import de.espend.idea.php.toolbox.symfony.utils.PhpElementsUtil;
 import de.espend.idea.php.toolbox.symfony.dic.MethodReferenceBag;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,11 +58,13 @@ public class MethodMatcher {
     public static class MethodMatchParameter {
 
         final private CallToSignature signature;
+        @Nullable
         final private ParameterBag parameterBag;
-        final private PsiElement[] parameters;
+        final private PsiElement @Nullable [] parameters;
+        @Nullable
         final private MethodReference methodReference;
 
-        public MethodMatchParameter(CallToSignature signature, ParameterBag parameterBag, PsiElement[] parameters, MethodReference methodReference) {
+        public MethodMatchParameter(CallToSignature signature, @Nullable ParameterBag parameterBag, PsiElement @Nullable [] parameters, @Nullable MethodReference methodReference) {
             this.signature = signature;
             this.parameterBag = parameterBag;
             this.parameters = parameters;
@@ -74,14 +76,16 @@ public class MethodMatcher {
             return signature;
         }
 
+        @Nullable
         public ParameterBag getParameterBag() {
             return this.parameterBag;
         }
 
-        public PsiElement[] getParameters() {
+        public PsiElement @Nullable [] getParameters() {
             return parameters;
         }
 
+        @Nullable
         public MethodReference getMethodReference() {
             return methodReference;
         }
@@ -191,7 +195,6 @@ public class MethodMatcher {
         }
 
     }
-
 
     /**
      * Matches: new \DateTime('FOO')

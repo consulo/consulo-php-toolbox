@@ -6,13 +6,12 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-import org.jetbrains.annotations.NotNull;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.fileTypes.FileType;
-import com.intellij.psi.PsiElement;
-import com.intellij.util.containers.ContainerUtil;
-import com.intellij.util.containers.HashMap;
+import consulo.virtualFileSystem.fileType.FileType;
+import consulo.language.psi.PsiElement;
+import consulo.language.psi.PsiFile;
+import consulo.util.collection.ContainerUtil;
+import java.util.HashMap;
+import java.util.HashSet;
 import de.espend.idea.php.toolbox.PhpToolboxApplicationService;
 import de.espend.idea.php.toolbox.dict.json.JsonRegistrar;
 import de.espend.idea.php.toolbox.dict.json.JsonSignature;
@@ -25,15 +24,19 @@ import de.espend.idea.php.toolbox.extension.PhpToolboxProviderInterface;
  */
 public class RegistrarMatchUtil {
 
-    @NotNull
-    public static Map<PhpToolboxProviderInterface, Set<JsonRegistrar>> getProviders(@NotNull PsiElement psiElement) {
+    public static Map<PhpToolboxProviderInterface, Set<JsonRegistrar>> getProviders(PsiElement psiElement) {
 
-        Collection<JsonRegistrar> registrars = ExtensionProviderUtil.getRegistrar(psiElement.getProject(), ServiceManager.getService(PhpToolboxApplicationService.class));
+        Collection<JsonRegistrar> registrars = ExtensionProviderUtil.getRegistrar(psiElement.getProject(), PhpToolboxApplicationService.getInstance(psiElement.getProject()));
         if(registrars.size() == 0) {
             return Collections.emptyMap();
         }
 
-        FileType fileType = psiElement.getContainingFile().getFileType();
+        PsiFile containingFile = psiElement.getContainingFile();
+        if(containingFile == null) {
+            return Collections.emptyMap();
+        }
+
+        FileType fileType = containingFile.getFileType();
         String fileTypeName = fileType.getId();
 
         Collection<PhpToolboxProviderInterface> providers = null;
@@ -68,29 +71,16 @@ public class RegistrarMatchUtil {
                 continue;
             }
 
-            LanguageMatcherParameter parameter = null;
+            LanguageMatcherParameter parameter = new LanguageMatcherParameter(psiElement, registrar);
 
-            for (LanguageRegistrarMatcherInterface matcher : ExtensionProviderUtil.REGISTRAR_MATCHER.getExtensions()) {
+            LanguageRegistrarMatcherInterface matched = psiElement.getProject().getApplication()
+                .getExtensionPoint(LanguageRegistrarMatcherInterface.class)
+                .findFirstSafe(matcher -> matcher.supports(fileType) && matcher.matches(parameter));
 
-                if(!matcher.supports(psiElement.getContainingFile().getFileType())) {
-                    continue;
+            if(matched != null) {
+                for (PhpToolboxProviderInterface matchedProvider : matchedProviders) {
+                    providerMatches.computeIfAbsent(matchedProvider, k -> new HashSet<>()).add(registrar);
                 }
-
-                if(parameter == null) {
-                    parameter = new LanguageMatcherParameter(psiElement, registrar);
-                }
-
-                if(matcher.matches(parameter)) {
-                    for (PhpToolboxProviderInterface matchedProvider : matchedProviders) {
-                        if(providerMatches.containsKey(matchedProvider)) {
-                            providerMatches.get(matchedProvider).add(registrar);
-                        }
-                        providerMatches.put(matchedProvider, ContainerUtil.newHashSet(registrar));
-                    }
-
-                    break;
-                }
-
             }
 
         }

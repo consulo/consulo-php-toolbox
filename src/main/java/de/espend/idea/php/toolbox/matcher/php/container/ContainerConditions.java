@@ -1,54 +1,53 @@
 package de.espend.idea.php.toolbox.matcher.php.container;
 
-import com.intellij.openapi.util.Condition;
+import java.util.function.Predicate;
 import de.espend.idea.php.toolbox.dict.json.JsonSignature;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ContainerConditions {
 
-    final public static Condition<JsonSignature> DEFAULT_TYPE_FILTER = new TypeSignatureCondition(JsonSignature.DEFAULT_TYPE);
-    final public static Condition<JsonSignature> RETURN_TYPE_FILTER = new TypeSignatureCondition("return");
-    final public static Condition<JsonSignature> RETURN_TYPE_TYPE = new TypeSignatureCondition("type");
+    final public static Predicate<JsonSignature> DEFAULT_TYPE_FILTER = new TypeSignatureCondition(JsonSignature.DEFAULT_TYPE);
+    final public static Predicate<JsonSignature> RETURN_TYPE_FILTER = new TypeSignatureCondition("return");
+    final public static Predicate<JsonSignature> RETURN_TYPE_TYPE = new TypeSignatureCondition("type");
 
-    final public static Condition<JsonSignature> ARRAY_KEY_AND_FUNCTION_FILTER = new ArrayKeyAndFunctionCondition();
-    final public static Condition<JsonSignature> FUNCTION_FILTER = new FunctionCondition();
+    final public static Predicate<JsonSignature> ARRAY_KEY_AND_FUNCTION_FILTER = new ArrayKeyAndFunctionCondition();
+    final public static Predicate<JsonSignature> FUNCTION_FILTER = new FunctionCondition();
 
-    final public static Condition<JsonSignature> CONSTRUCTOR_FILTER = new ConstructorJsonSignatureCondition();
+    final public static Predicate<JsonSignature> CONSTRUCTOR_FILTER = new ConstructorJsonSignatureCondition();
 
-    private static class ArrayKeyAndFunctionCondition implements Condition<JsonSignature> {
+    private static class ArrayKeyAndFunctionCondition implements Predicate<JsonSignature> {
         @Override
-        public boolean value(JsonSignature signature) {
+        public boolean test(JsonSignature signature) {
             return "array_key".equals(signature.getType()) && StringUtils.isNotBlank(signature.getFunction());
         }
     }
 
-    private static class FunctionCondition implements Condition<JsonSignature> {
+    private static class FunctionCondition implements Predicate<JsonSignature> {
         @Override
-        public boolean value(JsonSignature s) {
+        public boolean test(JsonSignature s) {
             return StringUtils.isNotBlank(s.getFunction());
         }
     }
 
-    public static class TypeSignatureCondition implements Condition<JsonSignature> {
+    public static class TypeSignatureCondition implements Predicate<JsonSignature> {
         final private String type;
 
-        public TypeSignatureCondition(@NotNull String type) {
+        public TypeSignatureCondition(String type) {
             this.type = type;
         }
 
         @Override
-        public boolean value(JsonSignature signature) {
+        public boolean test(JsonSignature signature) {
             return type.equals(signature.getType());
         }
     }
 
-    private static class ConstructorJsonSignatureCondition implements Condition<JsonSignature> {
+    private static class ConstructorJsonSignatureCondition implements Predicate<JsonSignature> {
         @Override
-        public boolean value(JsonSignature signature) {
+        public boolean test(JsonSignature signature) {
             return "__construct".equalsIgnoreCase(signature.getMethod());
         }
     }

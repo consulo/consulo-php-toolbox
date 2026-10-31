@@ -1,25 +1,24 @@
 package de.espend.idea.php.toolbox.extension;
 
-import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.psi.PsiElement;
+import consulo.annotation.component.ComponentScope;
+import consulo.annotation.component.ExtensionAPI;
+import consulo.language.editor.completion.lookup.LookupElement;
+import consulo.language.psi.PsiElement;
 import de.espend.idea.php.toolbox.provider.source.SourceContributorDeclarationHandlerParameter;
 import de.espend.idea.php.toolbox.provider.source.SourceContributorParameter;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
+@ExtensionAPI(ComponentScope.APPLICATION)
 public interface SourceContributorInterface {
 
-    @NotNull
-    Collection<LookupElement> getLookupElements(@NotNull SourceContributorParameter parameter);
+    Collection<LookupElement> getLookupElements(SourceContributorParameter parameter);
 
-    @NotNull
-    Collection<PsiElement> getPsiTargets(@NotNull SourceContributorDeclarationHandlerParameter parameter);
+    Collection<PsiElement> getPsiTargets(SourceContributorDeclarationHandlerParameter parameter);
 
-    @NotNull
     String getName();
 
 }

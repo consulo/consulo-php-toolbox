@@ -1,9 +1,9 @@
 package de.espend.idea.php.toolbox.provider.php;
 
-import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.psi.PsiElement;
+import consulo.language.editor.completion.lookup.LookupElement;
+import consulo.language.editor.completion.lookup.LookupElementBuilder;
+import consulo.util.lang.StringUtil;
+import consulo.language.psi.PsiElement;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
@@ -12,8 +12,8 @@ import de.espend.idea.php.toolbox.extension.PhpToolboxProviderAbstract;
 import de.espend.idea.php.toolbox.navigation.dict.PhpToolboxDeclarationHandlerParameter;
 import de.espend.idea.php.toolbox.type.PhpToolboxTypeProviderArguments;
 import de.espend.idea.php.toolbox.type.PhpToolboxTypeProviderInterface;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,8 +24,7 @@ import java.util.HashSet;
  */
 abstract class PhpIndexAbstractProviderAbstract extends PhpToolboxProviderAbstract implements PhpToolboxTypeProviderInterface {
 
-    @NotNull
-    public Collection<LookupElement> getLookupElements(@NotNull PhpToolboxCompletionContributorParameter parameter) {
+    public Collection<LookupElement> getLookupElements(PhpToolboxCompletionContributorParameter parameter) {
         PhpIndex instance = PhpIndex.getInstance(parameter.getProject());
 
         Collection<LookupElement> lookupElements = new ArrayList<>();
@@ -43,21 +42,18 @@ abstract class PhpIndexAbstractProviderAbstract extends PhpToolboxProviderAbstra
         return lookupElements;
     }
 
-    @NotNull
-    protected Collection<String> getClasses(@NotNull PhpToolboxCompletionContributorParameter parameter) {
+    protected Collection<String> getClasses(PhpToolboxCompletionContributorParameter parameter) {
         return PhpIndex.getInstance(parameter.getProject()).getAllClassNames(parameter.getCompletionResultSet().getPrefixMatcher());
     }
 
-    protected abstract Collection<PhpClass> getPhpClassesForLookup(@NotNull PhpIndex phpIndex, @NotNull String className);
+    protected abstract Collection<PhpClass> getPhpClassesForLookup(PhpIndex phpIndex, String className);
 
-    @NotNull
-    protected Collection<PhpClass> resolveParameter(@NotNull PhpIndex phpIndex, @NotNull String parameter) {
+    protected Collection<PhpClass> resolveParameter(PhpIndex phpIndex, String parameter) {
         return phpIndex.getAnyByFQN(parameter);
     }
 
-    @NotNull
     @Override
-    public Collection<PsiElement> getPsiTargets(@NotNull PhpToolboxDeclarationHandlerParameter parameter) {
+    public Collection<PsiElement> getPsiTargets(PhpToolboxDeclarationHandlerParameter parameter) {
         String contents = parameter.getContents();
         if(!StringUtil.startsWithChar(contents, '\\')) {
             contents = "\\" + contents;
@@ -70,7 +66,7 @@ abstract class PhpIndexAbstractProviderAbstract extends PhpToolboxProviderAbstra
 
     @Nullable
     @Override
-    public Collection<PhpNamedElement> resolveParameter(@NotNull PhpToolboxTypeProviderArguments args) {
+    public Collection<PhpNamedElement> resolveParameter(PhpToolboxTypeProviderArguments args) {
         String type = args.getParameter().replaceAll("\\\\+", "\\\\");
 
         return new HashSet<>(

@@ -1,8 +1,8 @@
 package de.espend.idea.php.toolbox.type;
 
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
 
@@ -11,5 +11,5 @@ import java.util.Collection;
  */
 public interface PhpToolboxTypeProviderInterface {
     @Nullable
-    Collection<PhpNamedElement> resolveParameter(@NotNull PhpToolboxTypeProviderArguments args);
+    Collection<PhpNamedElement> resolveParameter(PhpToolboxTypeProviderArguments args);
 }

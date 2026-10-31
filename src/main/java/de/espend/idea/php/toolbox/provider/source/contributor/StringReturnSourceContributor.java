@@ -1,10 +1,11 @@
 package de.espend.idea.php.toolbox.provider.source.contributor;
 
-import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Pair;
-import com.intellij.psi.PsiElement;
+import consulo.annotation.component.ExtensionImpl;
+import consulo.language.editor.completion.lookup.LookupElement;
+import consulo.language.editor.completion.lookup.LookupElementBuilder;
+import consulo.project.Project;
+import consulo.util.lang.Pair;
+import consulo.language.psi.PsiElement;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -15,7 +16,6 @@ import de.espend.idea.php.toolbox.provider.source.SourceContributorParameter;
 import de.espend.idea.php.toolbox.provider.source.contributor.utils.ReturnSourceUtil;
 import de.espend.idea.php.toolbox.symfony.utils.PhpElementsUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,11 +24,11 @@ import java.util.Collections;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
+@ExtensionImpl
 public class StringReturnSourceContributor implements SourceContributorInterface {
 
-    @NotNull
     @Override
-    public Collection<LookupElement> getLookupElements(@NotNull SourceContributorParameter parameter) {
+    public Collection<LookupElement> getLookupElements(SourceContributorParameter parameter) {
 
         Collection<LookupElement> lookupElements = new ArrayList<>();
 
@@ -50,9 +50,8 @@ public class StringReturnSourceContributor implements SourceContributorInterface
         return lookupElements;
     }
 
-    @NotNull
     @Override
-    public Collection<PsiElement> getPsiTargets(@NotNull SourceContributorDeclarationHandlerParameter parameter) {
+    public Collection<PsiElement> getPsiTargets(SourceContributorDeclarationHandlerParameter parameter) {
 
         String contents = parameter.getHandlerParameter().getContents();
         if(StringUtils.isBlank(contents)) {
@@ -79,7 +78,7 @@ public class StringReturnSourceContributor implements SourceContributorInterface
         return psiElements;
     }
 
-    private void visitReturnElements(@NotNull Project project, @NotNull String className, @NotNull String methodName, @NotNull ReturnVisitor visitor) {
+    private void visitReturnElements(Project project, String className, String methodName, ReturnVisitor visitor) {
 
         for (PhpClass phpClass : PhpIndex.getInstance(project).getAllSubclasses(className)) {
 
@@ -96,27 +95,26 @@ public class StringReturnSourceContributor implements SourceContributorInterface
     }
 
     private interface ReturnVisitor {
-        void visit(@NotNull Method method, @NotNull String contents);
+        void visit(Method method, String contents);
     }
 
-    @NotNull
     @Override
     public String getName() {
         return "return";
     }
 
     private static class MyReturnTargetVisitor implements ReturnVisitor {
-        @NotNull
+
         private final String contents;
         private final Collection<PsiElement> psiElements;
 
-        public MyReturnTargetVisitor(@NotNull String contents, @NotNull Collection<PsiElement> psiElements) {
+        public MyReturnTargetVisitor(String contents, Collection<PsiElement> psiElements) {
             this.contents = contents;
             this.psiElements = psiElements;
         }
 
         @Override
-        public void visit(@NotNull Method method, @NotNull String returnValue) {
+        public void visit(Method method, String returnValue) {
             if (contents.equals(returnValue)) {
                 psiElements.add(method);
             }
@@ -124,17 +122,17 @@ public class StringReturnSourceContributor implements SourceContributorInterface
     }
 
     private static class MyReturnLookupVisitor implements ReturnVisitor {
-        @NotNull
+
         private final JsonProvider provider;
         private final Collection<LookupElement> lookupElements;
 
-        public MyReturnLookupVisitor(@NotNull JsonProvider provider, @NotNull Collection<LookupElement> lookupElements) {
+        public MyReturnLookupVisitor(JsonProvider provider, Collection<LookupElement> lookupElements) {
             this.provider = provider;
             this.lookupElements = lookupElements;
         }
 
         @Override
-        public void visit(@NotNull Method method, @NotNull String contents) {
+        public void visit(Method method, String contents) {
             LookupElementBuilder decoratedLookupElementBuilder = ReturnSourceUtil.buildLookupElement(method, contents, provider.getDefaults());
             lookupElements.add(decoratedLookupElementBuilder);
         }

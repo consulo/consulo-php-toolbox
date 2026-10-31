@@ -1,16 +1,15 @@
 package de.espend.idea.php.toolbox.provider.presentation;
 
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
-import javax.swing.*;
+import consulo.ui.image.Image;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public abstract class ProviderPresentation {
-
     @Nullable
-    public Icon getIcon() {
+    public Image getIcon() {
         return null;
     }
 
@@ -19,9 +18,7 @@ public abstract class ProviderPresentation {
         return null;
     }
 
-    @Nullable
-    public ProviderParameter[] getParameter() {
+    public ProviderParameter @Nullable [] getParameter() {
         return null;
     }
 }
-

@@ -1,38 +1,48 @@
 package de.espend.idea.php.toolbox;
 
-import com.intellij.openapi.application.PathManager;
-import com.intellij.openapi.components.*;
-import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.util.xmlb.XmlSerializerUtil;
+import consulo.annotation.component.ComponentScope;
+import consulo.annotation.component.ServiceAPI;
+import consulo.annotation.component.ServiceImpl;
+import consulo.component.persist.PersistentStateComponent;
+import consulo.component.persist.State;
+import consulo.component.persist.Storage;
+import consulo.container.boot.ContainerPathManager;
+import consulo.logging.Logger;
+import consulo.project.Project;
+import consulo.util.xml.serializer.XmlSerializerUtil;
 import de.espend.idea.php.toolbox.utils.JsonParseUtil;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import jakarta.inject.Singleton;
+import org.jspecify.annotations.Nullable;
 
 import java.io.File;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-@Service
-@State(name = "PHP Toolbox", storages = @Storage("$APP_CONFIG$/php-toolbox.xml"))
+@Singleton
+@ServiceAPI(ComponentScope.APPLICATION)
+@ServiceImpl
+@State(name = "PHP Toolbox", storages = @Storage("php-toolbox.xml"))
 public class PhpToolboxApplicationService implements PersistentStateComponent<PhpToolboxApplicationService> {
 
-    final public static Logger LOG = Logger.getInstance("Toolbox-Plugin");
+    public static final Logger LOG = Logger.getInstance("Toolbox-Plugin");
+
+    public static PhpToolboxApplicationService getInstance(Project project) {
+        return project.getApplication().getInstance(PhpToolboxApplicationService.class);
+    }
 
     public File[] getApplicationJsonFiles() {
-
         File file = new File(getApplicationFolder());
-        if(!file.isDirectory()) {
+        if (!file.isDirectory()) {
             return new File[0];
         }
 
-        return file.listFiles(new JsonParseUtil.JsonFileFilter());
-
+        File[] files = file.listFiles(new JsonParseUtil.JsonFileFilter());
+        return files != null ? files : new File[0];
     }
 
-    @NotNull
     public static String getApplicationFolder() {
-        return PathManager.getConfigPath() + "/php-toolbox";
+        return ContainerPathManager.get().getConfigPath() + "/php-toolbox";
     }
 
     @Nullable
@@ -42,7 +52,7 @@ public class PhpToolboxApplicationService implements PersistentStateComponent<Ph
     }
 
     @Override
-    public void loadState(@NotNull PhpToolboxApplicationService applicationService) {
+    public void loadState(PhpToolboxApplicationService applicationService) {
         XmlSerializerUtil.copyBean(applicationService, this);
     }
 }

@@ -1,21 +1,21 @@
 package de.espend.idea.php.toolbox.provider.source.contributor.utils;
 
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.openapi.util.Pair;
+import consulo.language.editor.completion.lookup.LookupElementBuilder;
+import consulo.util.lang.Pair;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import de.espend.idea.php.toolbox.dict.json.JsonRawLookupElement;
 import de.espend.idea.php.toolbox.utils.JsonParseUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
-import com.intellij.openapi.util.Iconable;
-import com.intellij.openapi.util.text.StringUtil;
-import consulo.ide.IconDescriptorUpdaters;
+import consulo.component.util.Iconable;
+import consulo.util.lang.StringUtil;
+import consulo.language.icon.IconDescriptorUpdaters;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -26,7 +26,7 @@ public class ReturnSourceUtil {
      * Extract valid class method syntax
      * "Foo::bar, Foo:car"
      */
-    public static Collection<Pair<String, String>> extractParameter(@NotNull String parameters) {
+    public static Collection<Pair<String, String>> extractParameter(String parameters) {
         Collection<Pair<String, String>> methods = new ArrayList<>();
 
         String[] sourceParameter = parameters.split(",");
@@ -42,7 +42,7 @@ public class ReturnSourceUtil {
         return methods;
     }
 
-    public static LookupElementBuilder buildLookupElement(@NotNull Method method, @NotNull String contents, @Nullable JsonRawLookupElement jsonRawLookupElement) {
+    public static LookupElementBuilder buildLookupElement(Method method, String contents, @Nullable JsonRawLookupElement jsonRawLookupElement) {
         LookupElementBuilder lookupElement = LookupElementBuilder.create(contents);
         PhpClass phpClass = method.getContainingClass();
 

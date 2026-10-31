@@ -1,18 +1,18 @@
 package de.espend.idea.php.toolbox.provider.php;
 
+import consulo.ui.image.Image;
+import consulo.annotation.component.ExtensionImpl;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 
-import javax.swing.Icon;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import com.intellij.codeInsight.completion.PrefixMatcher;
-import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.icons.AllIcons;
-import com.intellij.psi.PsiElement;
+import org.jspecify.annotations.Nullable;
+import consulo.application.util.matcher.PrefixMatcher;
+import consulo.language.editor.completion.lookup.LookupElement;
+import consulo.language.editor.completion.lookup.LookupElementBuilder;
+import consulo.platform.base.icon.PlatformIconGroup;
+import consulo.language.psi.PsiElement;
 import com.jetbrains.php.PhpIndex;
 import de.espend.idea.php.toolbox.completion.dict.PhpToolboxCompletionContributorParameter;
 import de.espend.idea.php.toolbox.extension.PhpToolboxProviderInterface;
@@ -22,26 +22,25 @@ import de.espend.idea.php.toolbox.provider.presentation.ProviderPresentation;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
+@ExtensionImpl
 public class FunctionProvider implements PhpToolboxProviderInterface {
-    @NotNull
+
     @Override
-    public Collection<LookupElement> getLookupElements(@NotNull PhpToolboxCompletionContributorParameter parameter) {
+    public Collection<LookupElement> getLookupElements(PhpToolboxCompletionContributorParameter parameter) {
         return PhpIndex.getInstance(parameter.getProject())
             .getAllFunctionNames(PrefixMatcher.ALWAYS_TRUE).stream().map(
-                s -> LookupElementBuilder.create(s).withIcon(AllIcons.Nodes.Function)
+                s -> LookupElementBuilder.create(s).withIcon(PlatformIconGroup.nodesFunction())
             )
             .collect(Collectors.toCollection(HashSet::new));
     }
 
-    @NotNull
     @Override
-    public Collection<PsiElement> getPsiTargets(@NotNull PhpToolboxDeclarationHandlerParameter parameter) {
+    public Collection<PsiElement> getPsiTargets(PhpToolboxDeclarationHandlerParameter parameter) {
         return new HashSet<PsiElement>() {{
             addAll(PhpIndex.getInstance(parameter.getProject()).getFunctionsByFQN(parameter.getContents()));
         }};
     }
 
-    @NotNull
     @Override
     public String getName() {
         return "php.functions";
@@ -53,8 +52,8 @@ public class FunctionProvider implements PhpToolboxProviderInterface {
         return new ProviderPresentation() {
             @Nullable
             @Override
-            public Icon getIcon() {
-                return AllIcons.Nodes.Function;
+            public Image getIcon() {
+                return PlatformIconGroup.nodesFunction();
             }
 
             @Nullable

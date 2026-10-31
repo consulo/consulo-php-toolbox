@@ -1,6 +1,6 @@
 package de.espend.idea.php.toolbox.dict.json;
 
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

@@ -1,9 +1,10 @@
 package de.espend.idea.php.toolbox.matcher.php;
 
-import com.intellij.openapi.fileTypes.FileType;
-import com.intellij.openapi.util.Condition;
-import com.intellij.psi.PsiElement;
-import com.intellij.util.containers.ContainerUtil;
+import consulo.annotation.component.ExtensionImpl;
+import consulo.virtualFileSystem.fileType.FileType;
+import java.util.function.Predicate;
+import consulo.language.psi.PsiElement;
+import consulo.util.collection.ContainerUtil;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.patterns.PhpPatterns;
@@ -15,17 +16,18 @@ import de.espend.idea.php.toolbox.matcher.php.container.ContainerConditions;
 import de.espend.idea.php.toolbox.symfony.utils.PhpElementsUtil;
 import de.espend.idea.php.toolbox.symfony.util.MethodMatcher;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
+@ExtensionImpl
 public class ArrayKeyValueSignatureRegistrarMatcher implements LanguageRegistrarMatcherInterface {
     @Override
-    public boolean matches(@NotNull LanguageMatcherParameter parameter) {
+    public boolean matches(LanguageMatcherParameter parameter) {
 
         PsiElement psiElement = parameter.getElement().getParent();
         if(!(psiElement instanceof StringLiteralExpression)) {
@@ -58,18 +60,21 @@ public class ArrayKeyValueSignatureRegistrarMatcher implements LanguageRegistrar
             // new Foo(['foo' => '<caret>'])
             PsiElement parent = parameterList.getParent();
             if(parent instanceof NewExpression) {
-                if (!"__construct".equals(signature.getMethod()) || StringUtils.isBlank(signature.getClassName())) {
+                String className = signature.getClassName();
+                String method = signature.getMethod();
+                if (method == null || !"__construct".equals(method) || className == null || StringUtils.isBlank(className)) {
                     continue;
                 }
 
                 if (new MethodMatcher.NewExpressionParameterMatcher(arrayCreationExpression, signature.getIndex())
-                    .withSignature(signature.getClassName(), signature.getMethod())
+                    .withSignature(className, method)
                     .match() != null
                     ) {
                     return true;
                 }
 
-            } else if(parent instanceof MethodReference) {
+            }
+            else if(parent instanceof MethodReference) {
                 if (StringUtils.isBlank(signature.getClassName()) || StringUtils.isBlank(signature.getMethod())) {
                     continue;
                 }
@@ -77,7 +82,8 @@ public class ArrayKeyValueSignatureRegistrarMatcher implements LanguageRegistrar
                 if (MethodMatcher.getMatchedSignatureWithDepth(arrayCreationExpression, new MethodMatcher.CallToSignature[]{new MethodMatcher.CallToSignature(signature.getClassName(), signature.getMethod())}, signature.getIndex()) != null) {
                     return true;
                 }
-            } else if(parent instanceof FunctionReference) {
+            }
+            else if(parent instanceof FunctionReference) {
                 if(StringUtils.isNotBlank(signature.getFunction())) {
                     if(PhpElementsUtil.isFunctionReference(arrayCreationExpression, signature.getIndex(), signature.getFunction())) {
                         return true;
@@ -90,7 +96,7 @@ public class ArrayKeyValueSignatureRegistrarMatcher implements LanguageRegistrar
     }
 
     @Nullable
-    private ArrayCreationExpression findArrayCreationExpression(@NotNull StringLiteralExpression psiElement, @NotNull String key) {
+    private ArrayCreationExpression findArrayCreationExpression(StringLiteralExpression psiElement, String key) {
 
         // value inside array
         // $menu->addChild(array(
@@ -120,15 +126,15 @@ public class ArrayKeyValueSignatureRegistrarMatcher implements LanguageRegistrar
     }
 
     @Override
-    public boolean supports(@NotNull FileType fileType) {
+    public boolean supports(FileType fileType) {
         return fileType == PhpFileType.INSTANCE;
     }
 
-    private static class MyValidJsonSignatureCondition implements Condition<JsonSignature> {
+    private static class MyValidJsonSignatureCondition implements Predicate<JsonSignature> {
         @Override
-        public boolean value(JsonSignature signature) {
+        public boolean test(JsonSignature signature) {
             return
-                ContainerConditions.DEFAULT_TYPE_FILTER.value(signature) &&
+                ContainerConditions.DEFAULT_TYPE_FILTER.test(signature) &&
                 signature.getArray() != null && StringUtils.isNotBlank(signature.getArray()) && (
                  (
                      signature.getClassName() != null && StringUtils.isNotBlank(signature.getClassName()) &&

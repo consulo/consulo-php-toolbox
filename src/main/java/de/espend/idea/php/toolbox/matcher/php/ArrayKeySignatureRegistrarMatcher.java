@@ -1,9 +1,10 @@
 package de.espend.idea.php.toolbox.matcher.php;
 
-import com.intellij.openapi.fileTypes.FileType;
-import com.intellij.openapi.util.Condition;
-import com.intellij.psi.PsiElement;
-import com.intellij.util.containers.ContainerUtil;
+import consulo.annotation.component.ExtensionImpl;
+import consulo.virtualFileSystem.fileType.FileType;
+import java.util.function.Predicate;
+import consulo.language.psi.PsiElement;
+import consulo.util.collection.ContainerUtil;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.patterns.PhpPatterns;
@@ -15,20 +16,21 @@ import de.espend.idea.php.toolbox.matcher.php.container.ContainerConditions;
 import de.espend.idea.php.toolbox.matcher.php.util.PhpMatcherUtil;
 import de.espend.idea.php.toolbox.symfony.util.MethodMatcher;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
+@ExtensionImpl
 public class ArrayKeySignatureRegistrarMatcher implements LanguageRegistrarMatcherInterface {
 
-    private static final Condition<JsonSignature> ARRAY_KEY_FILTER = signature -> "array_key".equals(signature.getType());
+    private static final Predicate<JsonSignature> ARRAY_KEY_FILTER = signature -> "array_key".equals(signature.getType());
 
     @Override
-    public boolean matches(@NotNull LanguageMatcherParameter parameter) {
+    public boolean matches(LanguageMatcherParameter parameter) {
 
         PsiElement psiElement = parameter.getElement().getParent();
         if(!(psiElement instanceof StringLiteralExpression)) {
@@ -74,14 +76,22 @@ public class ArrayKeySignatureRegistrarMatcher implements LanguageRegistrarMatch
                 }
 
             }
-        } else if(parent instanceof FunctionReference) {
+        }
+        else if(parent instanceof FunctionReference) {
             // foo(["<caret>"]);
             return PhpMatcherUtil.matchesArraySignature(arrayCreationExpression, ContainerUtil.filter(signatures, ContainerConditions.ARRAY_KEY_AND_FUNCTION_FILTER));
-        } else if(parent instanceof NewExpression) {
+        }
+        else if(parent instanceof NewExpression) {
             // new Foo(["<caret>"]);
             for (JsonSignature signature : ContainerUtil.filter(signatures, ContainerConditions.CONSTRUCTOR_FILTER)) {
+                String className = signature.getClassName();
+                String method = signature.getMethod();
+                if(className == null || method == null) {
+                    continue;
+                }
+
                 if(new MethodMatcher.NewExpressionParameterMatcher(arrayCreationExpression, signature.getIndex())
-                    .withSignature(signature.getClassName(), signature.getMethod())
+                    .withSignature(className, method)
                     .match() != null
                     )
                 {
@@ -94,7 +104,7 @@ public class ArrayKeySignatureRegistrarMatcher implements LanguageRegistrarMatch
     }
 
     @Nullable
-    private ArrayCreationExpression findArrayCreationExpression(@NotNull StringLiteralExpression psiElement) {
+    private ArrayCreationExpression findArrayCreationExpression(StringLiteralExpression psiElement) {
 
         // value inside array
         // $menu->addChild(array(
@@ -139,7 +149,7 @@ public class ArrayKeySignatureRegistrarMatcher implements LanguageRegistrarMatch
     }
 
     @Override
-    public boolean supports(@NotNull FileType fileType) {
+    public boolean supports(FileType fileType) {
         return fileType == PhpFileType.INSTANCE;
     }
 }

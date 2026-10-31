@@ -1,6 +1,7 @@
 package de.espend.idea.php.toolbox.symfony.util;
 
-import com.intellij.psi.PsiElement;
+import org.jspecify.annotations.Nullable;
+import consulo.language.psi.PsiElement;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -19,6 +20,7 @@ public class ParameterBag {
         return index;
     }
 
+    @Nullable
     public String getValue() {
         return PsiElementUtils.getMethodParameter(psiElement);
     }

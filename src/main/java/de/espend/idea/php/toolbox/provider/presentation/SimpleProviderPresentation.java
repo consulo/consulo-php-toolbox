@@ -1,28 +1,26 @@
 package de.espend.idea.php.toolbox.provider.presentation;
 
-import de.espend.idea.php.toolbox.PhpToolboxIcons;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import de.espend.idea.php.toolbox.icon.PhpToolboxIconGroup;
+import org.jspecify.annotations.Nullable;
 
-import javax.swing.*;
+import consulo.ui.image.Image;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class SimpleProviderPresentation extends ProviderPresentation {
+    private static final SimpleProviderPresentation INSTANCE = new SimpleProviderPresentation();
 
-    private static SimpleProviderPresentation instance;
-
-    private SimpleProviderPresentation() {}
+    private SimpleProviderPresentation() {
+    }
 
     @Nullable
     @Override
-    public Icon getIcon() {
-        return PhpToolboxIcons.TOOLBOX;
+    public Image getIcon() {
+        return PhpToolboxIconGroup.toolbox();
     }
 
-    @NotNull
     public static SimpleProviderPresentation getInstance() {
-        return instance != null ? instance : (instance = new SimpleProviderPresentation());
+        return INSTANCE;
     }
 }

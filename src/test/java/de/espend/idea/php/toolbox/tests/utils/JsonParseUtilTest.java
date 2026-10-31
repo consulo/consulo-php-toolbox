@@ -1,182 +1,174 @@
 package de.espend.idea.php.toolbox.tests.utils;
 
-import com.intellij.openapi.util.Condition;
-import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.util.io.StreamUtil;
-import com.intellij.util.containers.ContainerUtil;
-import de.espend.idea.php.toolbox.dict.json.*;
+import consulo.util.collection.ContainerUtil;
+import de.espend.idea.php.toolbox.dict.json.JsonConfigFile;
+import de.espend.idea.php.toolbox.dict.json.JsonProvider;
+import de.espend.idea.php.toolbox.dict.json.JsonRawLookupElement;
+import de.espend.idea.php.toolbox.dict.json.JsonRegistrar;
+import de.espend.idea.php.toolbox.dict.json.JsonSignature;
 import de.espend.idea.php.toolbox.utils.JsonParseUtil;
-import org.jetbrains.annotations.NotNull;
-import org.junit.Assert;
-import org.junit.Test;
+import org.jspecify.annotations.NullUnmarked;
+import org.junit.jupiter.api.Test;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.*;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class JsonParseUtilTest extends Assert {
+@NullUnmarked
+public class JsonParseUtilTest {
+    private static JsonConfigFile loadConfig() {
+        try (InputStream stream = JsonParseUtilTest.class.getResourceAsStream("ide-toolbox.metadata.json")) {
+            assertNotNull(stream);
+            JsonConfigFile config = JsonParseUtil.getDeserializeConfig(new String(stream.readAllBytes(), StandardCharsets.UTF_8));
+            assertNotNull(config);
+            return config;
+        }
+        catch (IOException e) {
+            throw new AssertionError(e);
+        }
+    }
 
     @Test
     public void testGetProviderJsonFromFile() {
+        Map<String, Collection<JsonRawLookupElement>> elements = JsonParseUtil.getProviderJsonRawLookupElements(loadConfig().getProviders());
+        assertTrue(elements.containsKey("date_format"));
 
-        File testFile = FileUtil.findFirstThatExist("src/test/java/de/espend/idea/php/toolbox/tests/utils/fixtures/ide-toolbox.metadata.json");
+        JsonRawLookupElement dateFormat = elements.get("date_format").iterator().next();
 
-        Map<String, Collection<JsonRawLookupElement>> elements = JsonParseUtil.getProviderJsonRawLookupElements(JsonParseUtil.getDeserializeConfig(testFile).getProviders());
-        assertTrue(elements.keySet().contains("date_format"));
-
-        JsonRawLookupElement date_format = elements.get("date_format").iterator().next();
-
-        assertEquals("d", date_format.getLookupString());
+        assertEquals("d", dateFormat.getLookupString());
 
         // defaults
-        assertEquals("com.jetbrains.php.PhpIcons.METHOD", date_format.getIcon());
-        assertEquals("(TailTest)", date_format.getTailText());
-        assertEquals("test", date_format.getTarget());
+        assertEquals("com.jetbrains.php.PhpIcons.METHOD", dateFormat.getIcon());
+        assertEquals("(TailTest)", dateFormat.getTailText());
+        assertEquals("test", dateFormat.getTarget());
 
-        Collection<JsonRawLookupElement> source1 = elements.get("source_2");
-        JsonRawLookupElement source1Item = source1.iterator().next();
-        assertEquals("d", source1Item.getLookupString());
+        JsonRawLookupElement source2Item = elements.get("source_2").iterator().next();
+        assertEquals("d", source2Item.getLookupString());
     }
 
     @Test
     public void testGetRegistrarJsonFromFile() {
+        JsonRegistrar next = loadConfig().getRegistrar().iterator().next();
 
-        File testFile = FileUtil.findFirstThatExist("src/test/java/de/espend/idea/php/toolbox/tests/utils/fixtures/ide-toolbox.metadata.json");
-
-        Collection<JsonRegistrar> elements = JsonParseUtil.getDeserializeConfig(testFile).getRegistrar();
-        JsonRegistrar next = elements.iterator().next();
-
-        assertTrue(ContainerUtil.filter(next.getSignatures(), new MyFunctionJsonSignatureCondition("foo")).size() > 0);
-        assertTrue(ContainerUtil.filter(next.getSignatures(), new MyFunctionJsonSignatureCondition("date")).size() > 0);
-
-        assertTrue(ContainerUtil.filter(next.getSignatures(), jsonSignature -> {
-            return "DateTime".equals(jsonSignature.getClassName());
-        }).size() > 0);
+        assertTrue(ContainerUtil.filter(next.getSignatures(), function("foo")).size() > 0);
+        assertTrue(ContainerUtil.filter(next.getSignatures(), function("date")).size() > 0);
+        assertTrue(ContainerUtil.filter(next.getSignatures(), signature -> "DateTime".equals(signature.getClassName())).size() > 0);
     }
 
     @Test
     public void testGetRegistrarJsonFromFileWithShortcut() {
-        File testFile = FileUtil.findFirstThatExist("src/test/java/de/espend/idea/php/toolbox/tests/utils/fixtures/ide-toolbox.metadata.json");
+        JsonRegistrar next = loadConfig().getRegistrar().iterator().next();
 
-        Collection<JsonRegistrar> elements = JsonParseUtil.getDeserializeConfig(testFile).getRegistrar();
-        JsonRegistrar next = elements.iterator().next();
-
-        JsonSignature object = ContainerUtil.find(next.getSignatures(), new MyFunctionJsonSignatureCondition("apple"));
+        JsonSignature object = ContainerUtil.find(next.getSignatures(), function("apple"));
 
         assertNotNull(object);
-        assertEquals(object.hashCode(), ContainerUtil.find(next.getSignatures(), new MyFunctionJsonSignatureCondition("apple")).hashCode());
+        assertEquals(object.hashCode(), ContainerUtil.find(next.getSignatures(), function("apple")).hashCode());
 
-        assertTrue(ContainerUtil.filter(next.getSignatures(), jsonSignature -> "apple".equals(jsonSignature.getClassName()) && "car".equals(jsonSignature.getMethod())).size() > 0);
+        assertTrue(ContainerUtil.filter(next.getSignatures(), signature -> "apple".equals(signature.getClassName()) && "car".equals(signature.getMethod())).size() > 0);
     }
 
     @Test
     public void testConfigDeserialize() {
-        JsonConfigFile elements = null;
-        try {
-            File file = FileUtil.findFirstThatExist("src/test/java/de/espend/idea/php/toolbox/tests/utils/fixtures/ide-toolbox.metadata.json");
-            elements = JsonParseUtil.getDeserializeConfig(StreamUtil.readText(new FileInputStream(file), Charset.defaultCharset()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        List<JsonProvider> providers = new ArrayList<>(loadConfig().getProviders());
 
-        List<JsonProvider> registrar = new ArrayList<>(elements.getProviders());
+        assertEquals("date_format", providers.get(0).getName());
 
-        assertEquals("date_format", registrar.get(0).getName());
-
-        Collection<JsonRawLookupElement> dateFromatProvider = registrar.get(0).getItems();
-        JsonRawLookupElement item = ContainerUtil.find(dateFromatProvider, new MyJsonRawLookupElementStringCondition("d"));
+        Collection<JsonRawLookupElement> dateFormatProvider = providers.get(0).getItems();
+        JsonRawLookupElement item = ContainerUtil.find(dateFormatProvider, lookupString("d"));
         assertNotNull(item);
-        assertEquals(item.hashCode(), ContainerUtil.find(dateFromatProvider, new MyJsonRawLookupElementStringCondition("d")).hashCode());
+        assertEquals(item.hashCode(), ContainerUtil.find(dateFormatProvider, lookupString("d")).hashCode());
 
-        assertNotNull(ContainerUtil.find(dateFromatProvider, new MyJsonRawLookupElementStringCondition("car")));
-        assertNotNull(ContainerUtil.find(dateFromatProvider, new MyJsonRawLookupElementStringCondition("apple")));
+        assertNotNull(ContainerUtil.find(dateFormatProvider, lookupString("car")));
+        assertNotNull(ContainerUtil.find(dateFormatProvider, lookupString("apple")));
 
-        assertEquals("source_1", registrar.get(1).getName());
-        assertEquals("return", registrar.get(1).getSource().getContributor());
-        assertEquals("\\Twig_Environment::getExtension", registrar.get(1).getSource().getParameter());
+        assertEquals("source_1", providers.get(1).getName());
+        assertEquals("return", providers.get(1).getSource().getContributor());
+        assertEquals("\\Twig_Environment::getExtension", providers.get(1).getSource().getParameter());
 
-        assertEquals("source_2", registrar.get(2).getName());
-        assertTrue(registrar.get(2).getItems().size() > 0);
+        assertEquals("source_2", providers.get(2).getName());
+        assertTrue(providers.get(2).getItems().size() > 0);
     }
 
     @Test
     public void testCreateSignaturesFromStrings() {
-        JsonSignature sign = JsonParseUtil.createSignaturesFromStrings(Collections.singletonList("\\Foo\\Bar:foo")).iterator().next();
+        JsonSignature sign = first("\\Foo\\Bar:foo");
         assertEquals("\\Foo\\Bar", sign.getClassName());
         assertEquals(0, sign.getIndex());
         assertEquals("foo", sign.getMethod());
 
-        sign = JsonParseUtil.createSignaturesFromStrings(Collections.singletonList("PHPUnit_Framework_MockObject_Generator:getMock")).iterator().next();
+        sign = first("PHPUnit_Framework_MockObject_Generator:getMock");
         assertEquals("PHPUnit_Framework_MockObject_Generator", sign.getClassName());
         assertEquals("getMock", sign.getMethod());
 
-        sign = JsonParseUtil.createSignaturesFromStrings(Collections.singletonList("PHPUnit_Framework_MockObject_Generator:getMock:1")).iterator().next();
+        sign = first("PHPUnit_Framework_MockObject_Generator:getMock:1");
         assertEquals("PHPUnit_Framework_MockObject_Generator", sign.getClassName());
         assertEquals("getMock", sign.getMethod());
         assertEquals(1, sign.getIndex());
 
-        sign = JsonParseUtil.createSignaturesFromStrings(Collections.singletonList("\\Foo\\Bar:f_oo")).iterator().next();
+        sign = first("\\Foo\\Bar:f_oo");
         assertEquals("\\Foo\\Bar", sign.getClassName());
 
-        sign = JsonParseUtil.createSignaturesFromStrings(Collections.singletonList("\\Foo\\Bar:fo-o")).iterator().next();
+        sign = first("\\Foo\\Bar:fo-o");
         assertEquals("\\Foo\\Bar", sign.getClassName());
 
-        sign = JsonParseUtil.createSignaturesFromStrings(Collections.singletonList("Foo\\B__--ar:foo")).iterator().next();
+        sign = first("Foo\\B__--ar:foo");
         assertEquals("Foo\\B__--ar", sign.getClassName());
         assertEquals("foo", sign.getMethod());
 
-        sign = JsonParseUtil.createSignaturesFromStrings(Collections.singletonList("\\Foo\\Bar:::::Fo_-o2")).iterator().next();
+        sign = first("\\Foo\\Bar:::::Fo_-o2");
         assertEquals("\\Foo\\Bar", sign.getClassName());
         assertEquals("Fo_-o2", sign.getMethod());
         assertEquals(0, sign.getIndex());
 
-        sign = JsonParseUtil.createSignaturesFromStrings(Collections.singletonList("\\Foo\\Bar:foo:1")).iterator().next();
+        sign = first("\\Foo\\Bar:foo:1");
         assertEquals("\\Foo\\Bar", sign.getClassName());
         assertEquals(1, sign.getIndex());
         assertEquals("foo", sign.getMethod());
 
-        sign = JsonParseUtil.createSignaturesFromStrings(Collections.singletonList("Foo\\B__--ar:foo:1")).iterator().next();
+        sign = first("Foo\\B__--ar:foo:1");
         assertEquals("Foo\\B__--ar", sign.getClassName());
         assertEquals(1, sign.getIndex());
         assertEquals("foo", sign.getMethod());
 
-        sign = JsonParseUtil.createSignaturesFromStrings(Collections.singletonList("foo_bar")).iterator().next();
+        sign = first("foo_bar");
         assertEquals("foo_bar", sign.getFunction());
         assertEquals(0, sign.getIndex());
 
-        sign = JsonParseUtil.createSignaturesFromStrings(Collections.singletonList("foo_bar:1")).iterator().next();
+        sign = first("foo_bar:1");
         assertEquals("foo_bar", sign.getFunction());
         assertEquals(1, sign.getIndex());
 
         assertEquals(0, JsonParseUtil.createSignaturesFromStrings(Collections.singletonList("")).size());
         assertEquals(0, JsonParseUtil.createSignaturesFromStrings(Collections.singletonList("a:")).size());
 
-        ArrayList<String> signatures = new ArrayList<>();
+        List<String> signatures = new ArrayList<>();
         signatures.add(null);
         assertEquals(0, JsonParseUtil.createSignaturesFromStrings(signatures).size());
     }
 
     @Test
     public void testEmptyString() {
-        assertNull(
-            JsonParseUtil.getDeserializeConfig("")
-        );
-
-        assertNull(
-            JsonParseUtil.getDeserializeConfig("{")
-        );
+        assertNull(JsonParseUtil.getDeserializeConfig(""));
+        assertNull(JsonParseUtil.getDeserializeConfig("{"));
     }
 
     @Test
     public void testParameterRegistrarMappedAsObject() {
-        File testFile = FileUtil.findFirstThatExist("src/test/java/de/espend/idea/php/toolbox/tests/utils/fixtures/ide-toolbox.metadata.json");
-
-        JsonRegistrar next = JsonParseUtil.getDeserializeConfig(testFile).getRegistrar().iterator().next();
+        JsonRegistrar next = loadConfig().getRegistrar().iterator().next();
 
         Map<String, Object> parameters = next.getParameters();
 
@@ -185,33 +177,15 @@ public class JsonParseUtilTest extends Assert {
         assertEquals("bobby car", parameters.get("car"));
     }
 
-    private static class MyFunctionJsonSignatureCondition implements Condition<JsonSignature> {
-        final private String function;
-
-        public MyFunctionJsonSignatureCondition(@NotNull String function) {
-            this.function = function;
-        }
-
-        @Override
-        public boolean value(JsonSignature signature) {
-            return function.equals(signature.getFunction());
-        }
+    private static JsonSignature first(String signature) {
+        return JsonParseUtil.createSignaturesFromStrings(Collections.singletonList(signature)).iterator().next();
     }
 
-    private static class MyJsonRawLookupElementStringCondition implements Condition<JsonRawLookupElement> {
-        final private String string;
-
-        public MyJsonRawLookupElementStringCondition(@NotNull String string) {
-            this.string = string;
-        }
-
-        @Override
-        public boolean value(JsonRawLookupElement element) {
-            return string.equals(element.getLookupString());
-        }
+    private static Predicate<JsonSignature> function(String function) {
+        return signature -> function.equals(signature.getFunction());
     }
 
-    private String getTestDataPath() {
-        return "src/test/java/de/espend/idea/php/toolbox/tests/utils/";
+    private static Predicate<JsonRawLookupElement> lookupString(String string) {
+        return element -> string.equals(element.getLookupString());
     }
 }

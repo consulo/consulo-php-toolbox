@@ -1,25 +1,25 @@
 package de.espend.idea.php.toolbox.matcher.twig;
 
+import consulo.annotation.component.ExtensionImpl;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jetbrains.annotations.NotNull;
-import com.intellij.openapi.fileTypes.FileType;
-import consulo.twig.TwigFileType;
+import consulo.virtualFileSystem.fileType.FileType;
+import com.jetbrains.twig.TwigFileType;
 import de.espend.idea.php.toolbox.dict.json.JsonSignature;
 import de.espend.idea.php.toolbox.dict.matcher.LanguageMatcherParameter;
 import de.espend.idea.php.toolbox.extension.LanguageRegistrarMatcherInterface;
 import de.espend.idea.php.toolbox.utils.TwigUtil;
 import org.apache.commons.lang3.StringUtils;
 
-
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
+@ExtensionImpl
 public class TwigBlockRegistrarMatcher implements LanguageRegistrarMatcherInterface {
 
     @Override
-    public boolean matches(@NotNull LanguageMatcherParameter parameter) {
+    public boolean matches(LanguageMatcherParameter parameter) {
         Set<String> functions = new HashSet<>();
 
         for (JsonSignature signature : parameter.getSignatures()) {
@@ -34,7 +34,7 @@ public class TwigBlockRegistrarMatcher implements LanguageRegistrarMatcherInterf
     }
 
     @Override
-    public boolean supports(@NotNull FileType fileType) {
+    public boolean supports(FileType fileType) {
         return fileType == TwigFileType.INSTANCE;
     }
 }

@@ -1,7 +1,8 @@
 package de.espend.idea.php.toolbox.matcher.php;
 
-import com.intellij.openapi.fileTypes.FileType;
-import com.intellij.psi.PsiElement;
+import consulo.annotation.component.ExtensionImpl;
+import consulo.virtualFileSystem.fileType.FileType;
+import consulo.language.psi.PsiElement;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
@@ -10,14 +11,14 @@ import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import de.espend.idea.php.toolbox.dict.matcher.LanguageMatcherParameter;
 import de.espend.idea.php.toolbox.extension.LanguageRegistrarMatcherInterface;
 import de.espend.idea.php.toolbox.matcher.php.util.PhpMatcherUtil;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
+@ExtensionImpl
 public class ReturnArraySignatureRegistrarMatcher implements LanguageRegistrarMatcherInterface {
     @Override
-    public boolean matches(@NotNull LanguageMatcherParameter parameter) {
+    public boolean matches(LanguageMatcherParameter parameter) {
 
         PsiElement parent = parameter.getElement().getParent();
         if(!(parent instanceof StringLiteralExpression)) {
@@ -43,7 +44,7 @@ public class ReturnArraySignatureRegistrarMatcher implements LanguageRegistrarMa
     }
 
     @Override
-    public boolean supports(@NotNull FileType fileType) {
+    public boolean supports(FileType fileType) {
         return fileType == PhpFileType.INSTANCE;
     }
 }

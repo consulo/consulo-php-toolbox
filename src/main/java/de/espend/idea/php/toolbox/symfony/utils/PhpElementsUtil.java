@@ -1,13 +1,13 @@
 package de.espend.idea.php.toolbox.symfony.utils;
 
-import com.intellij.openapi.project.Project;
-import com.intellij.patterns.PlatformPatterns;
-import com.intellij.patterns.PsiElementPattern;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
-import com.intellij.psi.PsiReference;
-import com.intellij.psi.impl.source.tree.LeafPsiElement;
-import com.intellij.psi.util.PsiTreeUtil;
+import consulo.project.Project;
+import consulo.language.pattern.PlatformPatterns;
+import consulo.language.pattern.PsiElementPattern;
+import consulo.language.psi.PsiElement;
+import consulo.language.psi.PsiRecursiveElementWalkingVisitor;
+import consulo.language.psi.PsiReference;
+import consulo.language.psi.LeafPsiElement;
+import consulo.language.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
@@ -16,8 +16,8 @@ import com.jetbrains.php.lang.psi.elements.*;
 import de.espend.idea.php.toolbox.symfony.dic.MethodReferenceBag;
 import de.espend.idea.php.toolbox.symfony.util.ParameterBag;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,7 +27,7 @@ import java.util.Set;
 public class PhpElementsUtil {
 
     @Nullable
-    static public PhpClass getClassInterface(Project project, @NotNull String className) {
+    static public PhpClass getClassInterface(Project project, String className) {
 
         // api workaround for at least interfaces
         if(!className.startsWith("\\")) {
@@ -37,7 +37,6 @@ public class PhpElementsUtil {
         Collection<PhpClass> phpClasses = PhpIndex.getInstance(project).getAnyByFQN(className);
         return phpClasses.size() == 0 ? null : phpClasses.iterator().next();
     }
-
 
     @Nullable
     static public Method getClassMethod(Project project, String phpClassName, String methodName) {
@@ -63,7 +62,7 @@ public class PhpElementsUtil {
         return null;
     }
 
-    static public Collection<PhpClass> getClassesOrInterfaces(Project project, @NotNull String className) {
+    static public Collection<PhpClass> getClassesOrInterfaces(Project project, String className) {
 
         // api workaround for at least interfaces
         if(!className.startsWith("\\")) {
@@ -164,8 +163,7 @@ public class PhpElementsUtil {
         return null;
     }
 
-    @Nullable
-    public static PsiElement[] getMethodParameterReferences(Method method, int parameterIndex) {
+    public static PsiElement @Nullable [] getMethodParameterReferences(Method method, int parameterIndex) {
 
         // we dont have a parameter on resolved method
         Parameter[] parameters = method.getParameters();
@@ -291,7 +289,6 @@ public class PhpElementsUtil {
         return null != methodRefName && Arrays.asList(methodName).contains(methodRefName);
     }
 
-
     /**
      * Get array creation element and array key path:
      * ['test' => ['test2' => '<cursor>']]
@@ -304,7 +301,7 @@ public class PhpElementsUtil {
      * @return array element
      */
     @Nullable
-    public static ArrayCreationExpression getArrayPath(final @NotNull PsiElement current, @NotNull String... keyPath) {
+    public static ArrayCreationExpression getArrayPath(final PsiElement current, String... keyPath) {
 
         // we need a php psielement like string element,
         // but we also support leaf items directly out of completion context
@@ -334,7 +331,6 @@ public class PhpElementsUtil {
         return null;
 
     }
-
 
     /**
      *
@@ -380,12 +376,12 @@ public class PhpElementsUtil {
      * First match wins
      */
     @Nullable
-    static public String getMethodReturnAsString(@NotNull Method method) {
+    static public String getMethodReturnAsString(Method method) {
 
         final Set<String> values = new HashSet<>();
         method.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
             @Override
-            public void visitElement(@NotNull PsiElement element) {
+            public void visitElement(PsiElement element) {
 
                 if(PhpElementsUtil.getMethodReturnPattern().accepts(element)) {
                     String value = PhpElementsUtil.getStringValue(element);
@@ -416,7 +412,7 @@ public class PhpElementsUtil {
                 .withLanguage(PhpLanguage.INSTANCE);
     }
 
-    public static boolean isEqualClassName(@NotNull PhpClass phpClass, @NotNull PhpClass compareClassName) {
+    public static boolean isEqualClassName(PhpClass phpClass, PhpClass compareClassName) {
         return isEqualClassName(phpClass, compareClassName.getPresentableFQN());
     }
 

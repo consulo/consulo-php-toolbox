@@ -1,7 +1,6 @@
 package de.espend.idea.php.toolbox.dict;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
 
@@ -9,12 +8,11 @@ public class MapObjectBag {
 
     private final Map<String, Object> parameters;
 
-    public MapObjectBag(@NotNull Map<String, Object> parameters) {
+    public MapObjectBag(Map<String, Object> parameters) {
         this.parameters = parameters;
     }
 
-    @NotNull
-    public Boolean getParameterBool(@NotNull String key, @NotNull Boolean defaultValue) {
+    public Boolean getParameterBool(String key, Boolean defaultValue) {
         if(!parameters.containsKey(key)) {
             return defaultValue;
         }
@@ -24,7 +22,7 @@ public class MapObjectBag {
     }
 
     @Nullable
-    public Boolean getParameterBool(@NotNull String key) {
+    public Boolean getParameterBool(String key) {
         if(!parameters.containsKey(key)) {
             return null;
         }
@@ -34,12 +32,12 @@ public class MapObjectBag {
     }
 
     @Nullable
-    public String getParameterString(@NotNull String key) {
+    public String getParameterString(String key) {
         return getParameterString(key, null);
     }
 
     @Nullable
-    public String getParameterString(@NotNull String key, @Nullable String defaultValue) {
+    public String getParameterString(String key, @Nullable String defaultValue) {
         if(!parameters.containsKey(key)) {
             return defaultValue;
         }

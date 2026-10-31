@@ -1,15 +1,17 @@
 package de.espend.idea.php.toolbox.extension;
 
-import com.intellij.psi.PsiElement;
+import consulo.annotation.component.ComponentScope;
+import consulo.annotation.component.ExtensionAPI;
+import consulo.language.psi.PsiElement;
 import de.espend.idea.php.toolbox.navigation.locator.TargetLocatorParameter;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
+@ExtensionAPI(ComponentScope.APPLICATION)
 public interface PhpToolboxTargetLocator {
-    @NotNull
-    Collection<PsiElement> getTargets(@NotNull TargetLocatorParameter parameter);
+
+    Collection<PsiElement> getTargets(TargetLocatorParameter parameter);
 }

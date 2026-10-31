@@ -1,20 +1,13 @@
-<idea-plugin url="https://github.com/Haehnchen/idea-php-toolbox">
-  <id>de.espend.idea.php.toolbox</id>
-  <name>PHP Toolbox</name>
-  <version>6.3.1</version>
-  <vendor email="daniel@espendiller.net" url="http://espend.de?p=de.espend.idea.php.toolbox">Daniel Espendiller</vendor>
-
-  <description><![CDATA[
-
-      <h1>PHP Toolbox</h1>
-
-      <a href="https://github.com/Haehnchen/idea-php-toolbox">GitHub</a> | <a href="https://github.com/Haehnchen/idea-php-toolbox-json-files">Json Examples</a> | <a href="https://www.paypal.me/DanielEspendiller">Donate</a>
-      <br/>
-
+<consulo-plugin url="https://github.com/consulo/consulo-php-toolbox">
+    <id>de.espend.idea.php.toolbox</id>
+    <name>PHP Toolbox</name>
+    <version>SNAPSHOT</version>
+    <vendor>Daniel Espendiller &amp; consulo.io</vendor>
+    <description><![CDATA[
       <p>
       This plugin provides "Method References" and "Type Provider" extracted from the Symfony Plugin.
-      You can configure the plugin with simple per project files <code>.ide-toolbox.metadata.json</code> to support for eg <code>$f->('date_time')->format, new Datetime('caret')</code>.
-      Also it improves some PhpStorm Core functionality.
+      You can configure the plugin with simple per project files <code>.ide-toolbox.metadata.json</code>
+      to support for eg <code>$f->('date_time')->format, new Datetime('caret')</code>.
       </p>
 
       <h2>Features:</h2>
@@ -22,76 +15,17 @@
         <li>PHP: More type hint variable completion variants</li>
         <li>PHP: Better callable arrays completion and navigation</li>
         <li>PHP: Global string navigation for class, method and function syntax</li>
-        <li>JSON plugin references extract from Symfony Plugin: schema see <a href="https://github.com/Haehnchen/idea-php-toolbox">README</a></li>
+        <li>JSON references extracted from Symfony Plugin: schema see <a href="https://github.com/Haehnchen/idea-php-toolbox">README</a></li>
         <li>Basic json files for: Behat, PHPUnit, Doctrine, Symfony, Twig and PHP Core</li>
-
+      </ul>
     ]]></description>
+    <category>Custom Languages</category>
 
-  <idea-version since-build="223"/>
+    <depends>consulo.php</depends>
+    <depends>consulo.twig</depends>
+    <depends>consulo.json</depends>
 
-  <depends>com.jetbrains.twig</depends>
-  <depends>com.jetbrains.php</depends>
-  <depends>com.intellij.modules.platform</depends>
-
-  <!--
-   TODO: Add provider
-  <depends optional="true">de.espend.idea.php.annotation</depends>
-  -->
-
-  <extensions defaultExtensionNs="com.jetbrains.php">
-      <!--
-    <typeProvider3 implementation="de.espend.idea.php.toolbox.type.PhpToolboxTypeProvider"/>
-      -->
-  </extensions>
-
-  <extensions defaultExtensionNs="com.intellij">
-
-    <applicationService serviceImplementation="de.espend.idea.php.toolbox.PhpToolboxApplicationService" />
-
-    <gotoDeclarationHandler implementation="de.espend.idea.php.toolbox.navigation.PhpToolboxGotoDeclarationHandler"/>
-    <completion.contributor language="any" implementationClass="de.espend.idea.php.toolbox.completion.ToolboxCompletionContributor"/>
-    <completion.contributor language="JSON" implementationClass="de.espend.idea.php.toolbox.completion.ToolboxJsonCompletionContributor"/>
-
-    <nameSuggestionProvider implementation="de.espend.idea.php.toolbox.refactoring.TypeHintSuggestionProvider" id="PHP"/>
-
-    <gotoDeclarationHandler implementation="de.espend.idea.php.toolbox.gotoCompletion.PhpGotoDeclarationHandler"/>
-    <completion.contributor language="PHP" implementationClass="de.espend.idea.php.toolbox.gotoCompletion.PhpGotoDeclarationHandler"/>
-  </extensions>
-
-  <extensionPoints>
-    <extensionPoint dynamic="true" name="extension.PhpToolboxProviderInterface" interface="de.espend.idea.php.toolbox.extension.PhpToolboxProviderInterface"/>
-    <extensionPoint dynamic="true" name="extension.SourceContributorInterface" interface="de.espend.idea.php.toolbox.extension.SourceContributorInterface"/>
-    <extensionPoint dynamic="true" name="extension.LanguageRegistrarMatcher" interface="de.espend.idea.php.toolbox.extension.LanguageRegistrarMatcherInterface"/>
-    <extensionPoint dynamic="true" name="extension.PhpToolboxTargetLocator" interface="de.espend.idea.php.toolbox.extension.PhpToolboxTargetLocator"/>
-    <extensionPoint dynamic="true" name="extension.ToolboxJsonFileCompletion" interface="de.espend.idea.php.toolbox.extension.ToolboxJsonFileCompletion"/>
-    <extensionPoint dynamic="true" name="extension.JsonStreamResource" interface="de.espend.idea.php.toolbox.extension.JsonStreamResource"/>
-  </extensionPoints>
-
-    <extensions defaultExtensionNs="de.espend.idea.php.toolbox.extension">
-        <PhpToolboxProviderInterface implementation="de.espend.idea.php.toolbox.provider.php.ClassProvider"/>
-        <PhpToolboxProviderInterface implementation="de.espend.idea.php.toolbox.provider.php.ClassInterfaceProvider"/>
-        <PhpToolboxProviderInterface implementation="de.espend.idea.php.toolbox.provider.php.InterfaceProvider"/>
-        <PhpToolboxProviderInterface implementation="de.espend.idea.php.toolbox.provider.php.TraitProvider"/>
-        <PhpToolboxProviderInterface implementation="de.espend.idea.php.toolbox.provider.php.FunctionProvider"/>
-
-        <SourceContributorInterface implementation="de.espend.idea.php.toolbox.provider.source.contributor.StringReturnSourceContributor"/>
-        <SourceContributorInterface implementation="de.espend.idea.php.toolbox.provider.source.contributor.ArrayReturnSourceContributor"/>
-        <SourceContributorInterface implementation="de.espend.idea.php.toolbox.provider.source.contributor.SubClassesSourceContributor"/>
-
-        <LanguageRegistrarMatcher implementation="de.espend.idea.php.toolbox.matcher.php.MethodParameterRegistrarMatcher"/>
-        <LanguageRegistrarMatcher implementation="de.espend.idea.php.toolbox.matcher.php.PhpFunctionRegistrarMatcher"/>
-        <LanguageRegistrarMatcher implementation="de.espend.idea.php.toolbox.matcher.php.ArrayKeySignatureRegistrarMatcher"/>
-        <LanguageRegistrarMatcher implementation="de.espend.idea.php.toolbox.matcher.php.ArrayKeyValueSignatureRegistrarMatcher"/>
-        <LanguageRegistrarMatcher implementation="de.espend.idea.php.toolbox.matcher.php.ReturnStringSignatureRegistrarMatcher"/>
-        <LanguageRegistrarMatcher implementation="de.espend.idea.php.toolbox.matcher.php.ReturnArraySignatureRegistrarMatcher"/>
-        <LanguageRegistrarMatcher implementation="de.espend.idea.php.toolbox.matcher.php.VariadicSignatureRegistrarMatcher"/>
-
-        <LanguageRegistrarMatcher implementation="de.espend.idea.php.toolbox.matcher.twig.TwigBlockRegistrarMatcher"/>
-
-        <PhpToolboxTargetLocator implementation="de.espend.idea.php.toolbox.navigation.locator.ProjectFileTargetLocator"/>
-        <PhpToolboxTargetLocator implementation="de.espend.idea.php.toolbox.navigation.locator.GlobalClassTargetLocator"/>
-
-        <JsonStreamResource implementation="de.espend.idea.php.toolbox.provider.InternalJsonStreamResource"/>
-    </extensions>
-
-</idea-plugin>
+    <tags>
+        <tag>framework</tag>
+    </tags>
+</consulo-plugin>

@@ -1,12 +1,12 @@
 package de.espend.idea.php.toolbox.navigation;
 
-import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
-import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.fileTypes.FileType;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiInvalidElementAccessException;
+import consulo.language.editor.navigation.GotoDeclarationHandler;
+import consulo.annotation.component.ExtensionImpl;
+import consulo.codeEditor.Editor;
+import consulo.virtualFileSystem.fileType.FileType;
+import consulo.language.psi.PsiElement;
+import consulo.language.psi.PsiFile;
+import consulo.language.psi.PsiInvalidElementAccessException;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.twig.TwigFileType;
@@ -16,8 +16,8 @@ import de.espend.idea.php.toolbox.extension.PhpToolboxProviderInterface;
 import de.espend.idea.php.toolbox.navigation.dict.PhpToolboxDeclarationHandlerParameter;
 import de.espend.idea.php.toolbox.utils.RegistrarMatchUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -27,11 +27,11 @@ import java.util.Set;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
+@ExtensionImpl
 public class PhpToolboxGotoDeclarationHandler implements GotoDeclarationHandler {
 
-    @Nullable
     @Override
-    public PsiElement[] getGotoDeclarationTargets(@Nullable PsiElement psiElement, int i, Editor editor) {
+    public PsiElement @Nullable [] getGotoDeclarationTargets(@Nullable PsiElement psiElement, int i, Editor editor) {
         if(psiElement == null) {
             return new PsiElement[0];
         }
@@ -39,7 +39,12 @@ public class PhpToolboxGotoDeclarationHandler implements GotoDeclarationHandler 
         PsiFile containingFile;
         try {
             containingFile = psiElement.getContainingFile();
-        } catch (PsiInvalidElementAccessException e) {
+        }
+        catch (PsiInvalidElementAccessException e) {
+            return new PsiElement[0];
+        }
+
+        if(containingFile == null) {
             return new PsiElement[0];
         }
 
@@ -52,7 +57,8 @@ public class PhpToolboxGotoDeclarationHandler implements GotoDeclarationHandler 
         if(psiElement.getNode().getElementType() == TwigTokenTypes.STRING_TEXT) {
             // twig language
             selectedItem = psiElement.getText();
-        } else {
+        }
+        else {
             // php language
 
             PsiElement stringLiteral = psiElement.getParent();
@@ -77,13 +83,6 @@ public class PhpToolboxGotoDeclarationHandler implements GotoDeclarationHandler 
             targets.addAll(provider.getKey().getPsiTargets(parameter));
         }
 
-        return targets.toArray(new PsiElement[targets.size()]);
+        return targets.toArray(PsiElement.EMPTY_ARRAY);
     }
-
-    @Nullable
-    @Override
-    public String getActionText(@NotNull DataContext dataContext) {
-        return null;
-    }
-
 }

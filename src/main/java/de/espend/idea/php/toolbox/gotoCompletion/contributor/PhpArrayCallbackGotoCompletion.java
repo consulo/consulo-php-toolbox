@@ -1,22 +1,22 @@
 package de.espend.idea.php.toolbox.gotoCompletion.contributor;
 
-import com.intellij.codeInsight.completion.CompletionParameters;
-import com.intellij.codeInsight.completion.CompletionResultSet;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.openapi.editor.Editor;
-import com.intellij.patterns.PlatformPatterns;
-import com.intellij.patterns.PsiElementPattern;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiWhiteSpace;
-import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.util.ProcessingContext;
+import consulo.language.editor.completion.CompletionParameters;
+import consulo.language.editor.completion.CompletionResultSet;
+import consulo.language.editor.completion.lookup.LookupElementBuilder;
+import consulo.codeEditor.Editor;
+import consulo.language.pattern.PlatformPatterns;
+import consulo.language.pattern.PsiElementPattern;
+import consulo.language.psi.PsiElement;
+import consulo.language.psi.PsiWhiteSpace;
+import consulo.language.psi.util.PsiTreeUtil;
+import consulo.language.util.ProcessingContext;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
 import de.espend.idea.php.toolbox.gotoCompletion.GotoCompletionContributor;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -30,7 +30,7 @@ import java.util.HashSet;
 public class PhpArrayCallbackGotoCompletion implements GotoCompletionContributor {
 
     @Override
-    public void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
+    public void addCompletions(CompletionParameters completionParameters, ProcessingContext context, CompletionResultSet resultSet) {
         PsiElement position = completionParameters.getPosition();
 
         PhpClass phpClass = findClassCallback(position);
@@ -57,9 +57,8 @@ public class PhpArrayCallbackGotoCompletion implements GotoCompletionContributor
         }
     }
 
-    @Nullable
     @Override
-    public PsiElement[] getGotoDeclarationTargets(@NotNull PsiElement psiElement, int i, Editor editor) {
+    public PsiElement @Nullable [] getGotoDeclarationTargets(PsiElement psiElement, int i, Editor editor) {
 
         Collection<PsiElement> psiElements = new HashSet<>();
 
@@ -84,7 +83,7 @@ public class PhpArrayCallbackGotoCompletion implements GotoCompletionContributor
      * [$this, '']
      * array($this, '')
      */
-    @NotNull
+
     @Override
     public PsiElementPattern.Capture<PsiElement> getPattern() {
         return PlatformPatterns.psiElement().withParent(
@@ -106,7 +105,7 @@ public class PhpArrayCallbackGotoCompletion implements GotoCompletionContributor
     }
 
     @Nullable
-    private PhpClass findClassCallback(@NotNull PsiElement position) {
+    private PhpClass findClassCallback(PsiElement position) {
         ArrayCreationExpression arrayCreation = PsiTreeUtil.getParentOfType(position, ArrayCreationExpression.class);
         if(arrayCreation == null) {
             return null;

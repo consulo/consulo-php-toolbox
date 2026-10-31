@@ -1,15 +1,16 @@
 package de.espend.idea.php.toolbox.extension;
 
-import com.intellij.openapi.fileTypes.FileType;
+import consulo.annotation.component.ComponentScope;
+import consulo.annotation.component.ExtensionAPI;
+import consulo.virtualFileSystem.fileType.FileType;
 import de.espend.idea.php.toolbox.dict.matcher.LanguageMatcherParameter;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
+@ExtensionAPI(ComponentScope.APPLICATION)
 public interface LanguageRegistrarMatcherInterface {
+    boolean matches(LanguageMatcherParameter parameter);
 
-    boolean matches(@NotNull LanguageMatcherParameter parameter);
-
-    boolean supports(@NotNull FileType fileType);
+    boolean supports(FileType fileType);
 }

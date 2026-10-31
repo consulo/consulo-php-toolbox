@@ -1,20 +1,20 @@
 package de.espend.idea.php.toolbox.gotoCompletion.contributor;
 
-import com.intellij.codeInsight.completion.CompletionParameters;
-import com.intellij.codeInsight.completion.CompletionResultSet;
-import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.project.Project;
-import com.intellij.patterns.ElementPattern;
-import com.intellij.patterns.PlatformPatterns;
-import com.intellij.psi.PsiElement;
-import com.intellij.util.ProcessingContext;
-import com.intellij.util.containers.ContainerUtil;
+import consulo.language.editor.completion.CompletionParameters;
+import consulo.language.editor.completion.CompletionResultSet;
+import consulo.codeEditor.Editor;
+import consulo.project.Project;
+import consulo.language.pattern.ElementPattern;
+import consulo.language.pattern.PlatformPatterns;
+import consulo.language.psi.PsiElement;
+import consulo.language.util.ProcessingContext;
+import consulo.util.collection.ContainerUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import de.espend.idea.php.toolbox.gotoCompletion.GotoCompletionContributor;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -30,12 +30,11 @@ import java.util.regex.Pattern;
 public class GlobalStringClassGoto implements GotoCompletionContributor {
 
     @Override
-    public void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
+    public void addCompletions(CompletionParameters completionParameters, ProcessingContext context, CompletionResultSet resultSet) {
     }
 
-    @Nullable
     @Override
-    public PsiElement[] getGotoDeclarationTargets(@NotNull PsiElement psiElement, int i, Editor editor) {
+    public PsiElement @Nullable [] getGotoDeclarationTargets(PsiElement psiElement, int i, Editor editor) {
         PsiElement parent = psiElement.getParent();
         if(!(parent instanceof StringLiteralExpression)) {
             return new PsiElement[0];
@@ -50,8 +49,7 @@ public class GlobalStringClassGoto implements GotoCompletionContributor {
         return getPsiElements(psiElement.getProject(), contents);
     }
 
-    @NotNull
-    public static PsiElement[] getPsiElements(@NotNull Project project, @NotNull String contents) {
+    public static PsiElement[] getPsiElements(Project project, String contents) {
 
         Collection<PsiElement> psiElements = new HashSet<>();
         contents = contents.replaceAll("\\\\+", "\\\\");
@@ -81,7 +79,6 @@ public class GlobalStringClassGoto implements GotoCompletionContributor {
         return psiElements.toArray(new PsiElement[psiElements.size()]);
     }
 
-    @NotNull
     @Override
     public ElementPattern<? extends PsiElement> getPattern() {
         return PlatformPatterns.psiElement().withParent(StringLiteralExpression.class);

@@ -1,13 +1,14 @@
 package de.espend.idea.php.toolbox.symfony.util;
 
-import com.intellij.psi.PsiElement;
+import consulo.language.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.ParameterListOwner;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class PsiElementUtils {
 
+    @Nullable
     public static String getMethodParameter(PsiElement parameter) {
 
         if (!(parameter instanceof StringLiteralExpression)) {

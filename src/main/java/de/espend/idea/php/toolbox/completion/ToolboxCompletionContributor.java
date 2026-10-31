@@ -1,17 +1,20 @@
 package de.espend.idea.php.toolbox.completion;
 
-import com.intellij.codeInsight.completion.*;
-import com.intellij.openapi.fileTypes.FileType;
-import com.intellij.patterns.PlatformPatterns;
-import com.intellij.psi.PsiElement;
-import com.intellij.util.ProcessingContext;
+import consulo.annotation.component.ExtensionImpl;
+import consulo.language.Language;
+import consulo.language.editor.completion.CompletionContributor;
+import consulo.language.editor.completion.CompletionType;
+import consulo.virtualFileSystem.fileType.FileType;
+import consulo.language.pattern.PlatformPatterns;
+import consulo.language.psi.PsiElement;
+import consulo.language.psi.PsiFile;
+import consulo.language.util.ProcessingContext;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.twig.TwigFileType;
 import de.espend.idea.php.toolbox.completion.dict.PhpToolboxCompletionContributorParameter;
 import de.espend.idea.php.toolbox.dict.json.JsonRegistrar;
 import de.espend.idea.php.toolbox.extension.PhpToolboxProviderInterface;
 import de.espend.idea.php.toolbox.utils.RegistrarMatchUtil;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.Set;
@@ -19,44 +22,48 @@ import java.util.Set;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
+@ExtensionImpl
 public class ToolboxCompletionContributor extends CompletionContributor {
 
     public ToolboxCompletionContributor() {
 
-        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
-            @Override
-            protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), (completionParameters, processingContext, completionResultSet) -> {
+            PsiElement position = completionParameters.getPosition();
 
-                PsiElement position = completionParameters.getPosition();
+            PsiFile containingFile = position.getContainingFile();
+            if(containingFile == null) {
+                return;
+            }
 
-                FileType fileType = position.getContainingFile().getFileType();
-                if(!(fileType instanceof PhpFileType) && !(fileType instanceof TwigFileType)) {
-                    return;
+            FileType fileType = containingFile.getFileType();
+            if(!(fileType instanceof PhpFileType) && !(fileType instanceof TwigFileType)) {
+                return;
+            }
+
+            Map<PhpToolboxProviderInterface, Set<JsonRegistrar>> providers = RegistrarMatchUtil.getProviders(position);
+            if(providers.size() == 0) {
+                return;
+            }
+
+            PhpToolboxCompletionContributorParameter parameter = null;
+            for (Map.Entry<PhpToolboxProviderInterface, Set<JsonRegistrar>> provider : providers.entrySet()) {
+
+                if(parameter == null) {
+                    parameter = new PhpToolboxCompletionContributorParameter(
+                        completionParameters,
+                        processingContext,
+                        completionResultSet,
+                        provider.getValue()
+                    );
                 }
 
-                Map<PhpToolboxProviderInterface, Set<JsonRegistrar>> providers = RegistrarMatchUtil.getProviders(position);
-                if(providers.size() == 0) {
-                    return;
-                }
-
-                PhpToolboxCompletionContributorParameter parameter = null;
-                for (Map.Entry<PhpToolboxProviderInterface, Set<JsonRegistrar>> provider : providers.entrySet()) {
-
-                    if(parameter == null) {
-                        parameter = new PhpToolboxCompletionContributorParameter(
-                            completionParameters,
-                            processingContext,
-                            completionResultSet,
-                            provider.getValue()
-                        );
-                    }
-
-                    completionResultSet.addAllElements(provider.getKey().getLookupElements(parameter));
-                }
-
+                completionResultSet.addAllElements(provider.getKey().getLookupElements(parameter));
             }
         });
-
     }
 
+    @Override
+    public Language getLanguage() {
+        return Language.ANY;
+    }
 }
