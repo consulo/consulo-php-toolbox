@@ -14,7 +14,7 @@ import de.espend.idea.php.toolbox.extension.SourceContributorInterface;
 import de.espend.idea.php.toolbox.provider.source.SourceContributorDeclarationHandlerParameter;
 import de.espend.idea.php.toolbox.provider.source.SourceContributorParameter;
 import de.espend.idea.php.toolbox.provider.source.contributor.utils.ReturnSourceUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -90,7 +90,7 @@ public class ArrayReturnSourceContributor implements SourceContributorInterface 
 
             method.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
                 @Override
-                public void visitElement(PsiElement element) {
+                public void visitElement(@NotNull PsiElement element) {
 
                     if(!(element instanceof PhpReturn)) {
                         super.visitElement(element);

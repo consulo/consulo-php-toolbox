@@ -7,8 +7,8 @@ import com.intellij.refactoring.rename.NameSuggestionProvider;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.refactoring.PhpNameSuggestionUtil;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.WordUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -28,7 +28,7 @@ public class TypeHintSuggestionProvider implements NameSuggestionProvider
 
     @Nullable
     @Override
-    public SuggestedNameInfo getSuggestedNames(PsiElement psiElement, PsiElement psiElement1, Set<String> set) {
+    public SuggestedNameInfo getSuggestedNames(@NotNull PsiElement psiElement, PsiElement psiElement1, @NotNull Set<String> set) {
 
         if(!(psiElement instanceof Parameter)) {
             return null;
@@ -51,7 +51,7 @@ public class TypeHintSuggestionProvider implements NameSuggestionProvider
 
                 // remove starting
                 if(item.toLowerCase().startsWith(end)) {
-                    item = WordUtils.uncapitalize(item.substring(end.length()));
+                    item = StringUtils.uncapitalize(item.substring(end.length()));
                 }
             }
 

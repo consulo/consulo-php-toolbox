@@ -1,6 +1,7 @@
 package de.espend.idea.php.toolbox.type;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.psi.PsiElement;
@@ -18,7 +19,7 @@ import de.espend.idea.php.toolbox.matcher.php.container.ContainerConditions;
 import de.espend.idea.php.toolbox.symfony.Symfony2InterfacesUtil;
 import de.espend.idea.php.toolbox.type.utils.PhpTypeProviderUtil;
 import de.espend.idea.php.toolbox.utils.ExtensionProviderUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -113,7 +114,7 @@ public class PhpToolboxTypeProvider implements PhpTypeProvider3 {
 
         Map<String, Collection<JsonRawLookupElement>> providerMap = ExtensionProviderUtil.getProviders(
             project,
-            ApplicationManager.getApplication().getComponent(PhpToolboxApplicationService.class)
+            ServiceManager.getService(PhpToolboxApplicationService.class)
         );
 
         Set<Pair<String, Integer>> providers = getProviderNames(project, (Function) phpNamedElement);

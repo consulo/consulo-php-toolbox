@@ -1,7 +1,8 @@
 package de.espend.idea.php.toolbox.utils;
 
-import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.extensions.ExtensionPointName;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.StreamUtil;
@@ -22,8 +23,6 @@ import de.espend.idea.php.toolbox.extension.SourceContributorInterface;
 import de.espend.idea.php.toolbox.extension.cache.JsonFileCache;
 import de.espend.idea.php.toolbox.matcher.php.container.ContainerConditions;
 import de.espend.idea.php.toolbox.provider.SourceProvider;
-import de.espend.idea.php.toolbox.remote.RemoteStorage;
-import de.espend.idea.php.toolbox.remote.provider.ProviderStorageInterface;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -60,6 +59,7 @@ public class ExtensionProviderUtil {
     private static final Key<CachedValue<Collection<JsonRegistrar>>> TYPE_CACHE = new Key<>("PHP_TOOLBOX_TYPE_CACHE");
     private static final Key<CachedValue<Collection<PhpToolboxProviderInterface>>> PROVIDER_CACHE = new Key<>("PHP_TOOLBOX_PROVIDER_CACHE");
     private static final Key<CachedValue<Collection<JsonConfigFile>>> CONFIGS_CACHE = new Key<>("PHP_TOOLBOX_CONFIGS");
+    private static final Key<CachedValue<Collection<JsonConfigFile>>> CONFIGS_CACHE_INDEX = new Key<>("PHP_TOOLBOX_CONFIGS_INDEX");
     private static final Key<CachedValue<Collection<JsonRegistrar>>> REGISTRAR_CACHE = new Key<>("PHP_TOOLBOX_REGISTRAR");
 
     @Nullable
@@ -82,7 +82,7 @@ public class ExtensionProviderUtil {
 
     @NotNull
     public static Collection<PhpToolboxProviderInterface> getProvidersInner(@NotNull Project project) {
-        PhpToolboxApplicationService phpToolboxApplicationService = ApplicationManager.getApplication().getComponent(PhpToolboxApplicationService.class);
+        PhpToolboxApplicationService phpToolboxApplicationService = ServiceManager.getService(PhpToolboxApplicationService.class);
 
         Collection<PhpToolboxProviderInterface> providers = new ArrayList<>(
             Arrays.asList(TOOLBOX_PROVIDER_EP.getExtensions())
@@ -169,7 +169,7 @@ public class ExtensionProviderUtil {
     @NotNull
     private static Collection<JsonRegistrar> getTypesInner(@NotNull Project project) {
         Collection<JsonRegistrar> jsonRegistrars = new ArrayList<>();
-        PhpToolboxApplicationService component = ApplicationManager.getApplication().getComponent(PhpToolboxApplicationService.class);
+        PhpToolboxApplicationService component = ServiceManager.getService(PhpToolboxApplicationService.class);
         if(component == null) {
             return jsonRegistrars;
         }
@@ -207,28 +207,45 @@ public class ExtensionProviderUtil {
 
         if(cache == null) {
             cache = CachedValuesManager.getManager(project).createCachedValue(() -> CachedValueProvider.Result.create(getJsonConfigsInner(project, phpToolboxApplicationService), PsiModificationTracker.MODIFICATION_COUNT), false);
-
             project.putUserData(CONFIGS_CACHE, cache);
         }
 
-        return cache.getValue();
+        Collection<JsonConfigFile> jsonConfigFiles = new ArrayList<>(cache.getValue());
+
+        // prevent reindex issues
+        if (!DumbService.getInstance(project).isDumb()) {
+            CachedValue<Collection<JsonConfigFile>> indexCache = project.getUserData(CONFIGS_CACHE_INDEX);
+
+            if (indexCache == null) {
+                indexCache = CachedValuesManager.getManager(project).createCachedValue(() -> {
+                    Collection<JsonConfigFile> jsonConfigFiles1 = new ArrayList<>();
+
+                    for (final PsiFile psiFile : FilenameIndex.getFilesByName(project, ".ide-toolbox.metadata.json", GlobalSearchScope.allScope(project))) {
+                        JsonConfigFile cachedValue = CachedValuesManager.getCachedValue(psiFile, () -> new CachedValueProvider.Result<>(
+                            JsonParseUtil.getDeserializeConfig(psiFile.getText()),
+                            psiFile,
+                            psiFile.getVirtualFile()
+                        ));
+
+                        if(cachedValue != null) {
+                            jsonConfigFiles1.add(cachedValue);
+                        }
+                    }
+
+                    return CachedValueProvider.Result.create(jsonConfigFiles1, PsiModificationTracker.MODIFICATION_COUNT);
+                }, false);
+            }
+
+            project.putUserData(CONFIGS_CACHE_INDEX, indexCache);
+            jsonConfigFiles.addAll(indexCache.getValue());
+        }
+
+        return jsonConfigFiles;
     }
 
     @NotNull
     synchronized private static Collection<JsonConfigFile> getJsonConfigsInner(@NotNull Project project, @NotNull PhpToolboxApplicationService phpToolboxApplicationService) {
         Collection<JsonConfigFile> jsonConfigFiles = new ArrayList<>();
-
-        for (final PsiFile psiFile : FilenameIndex.getFilesByName(project, ".ide-toolbox.metadata.json", GlobalSearchScope.allScope(project))) {
-            JsonConfigFile cachedValue = CachedValuesManager.getCachedValue(psiFile, () -> new CachedValueProvider.Result<>(
-                JsonParseUtil.getDeserializeConfig(psiFile.getText()),
-                psiFile,
-                psiFile.getVirtualFile()
-            ));
-
-            if(cachedValue != null) {
-                jsonConfigFiles.add(cachedValue);
-            }
-        }
 
         synchronized (APPLICATION_CACHE) {
             jsonConfigFiles.addAll(APPLICATION_CACHE.get(new HashSet<>(Arrays.asList(phpToolboxApplicationService.getApplicationJsonFiles()))));
@@ -236,15 +253,6 @@ public class ExtensionProviderUtil {
 
         // resources files by plugins
         jsonConfigFiles.addAll(getResourceFiles());
-
-        // @TODO: solve object and cache issue
-        ProviderStorageInterface providerStorage = RemoteStorage.getInstance(project).get("php-toolbox-json");
-        if(providerStorage != null) {
-            Object data = providerStorage.getData();
-            if(data instanceof JsonConfigFile) {
-                jsonConfigFiles.add((JsonConfigFile) data);
-            }
-        }
 
         return jsonConfigFiles;
     }

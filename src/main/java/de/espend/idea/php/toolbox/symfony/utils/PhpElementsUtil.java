@@ -15,7 +15,7 @@ import com.jetbrains.php.lang.patterns.PhpPatterns;
 import com.jetbrains.php.lang.psi.elements.*;
 import de.espend.idea.php.toolbox.symfony.dic.MethodReferenceBag;
 import de.espend.idea.php.toolbox.symfony.util.ParameterBag;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -385,11 +385,11 @@ public class PhpElementsUtil {
         final Set<String> values = new HashSet<>();
         method.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
             @Override
-            public void visitElement(PsiElement element) {
+            public void visitElement(@NotNull PsiElement element) {
 
                 if(PhpElementsUtil.getMethodReturnPattern().accepts(element)) {
                     String value = PhpElementsUtil.getStringValue(element);
-                    if(value != null && StringUtils.isNotBlank(value)) {
+                    if(StringUtils.isNotBlank(value)) {
                         values.add(value);
                     }
                 }

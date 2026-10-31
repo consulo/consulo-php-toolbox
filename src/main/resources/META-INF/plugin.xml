@@ -1,8 +1,8 @@
 <idea-plugin url="https://github.com/Haehnchen/idea-php-toolbox">
   <id>de.espend.idea.php.toolbox</id>
   <name>PHP Toolbox</name>
-  <version>0.4.6</version>
-  <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
+  <version>6.3.1</version>
+  <vendor email="daniel@espendiller.net" url="http://espend.de?p=de.espend.idea.php.toolbox">Daniel Espendiller</vendor>
 
   <description><![CDATA[
 
@@ -24,22 +24,10 @@
         <li>PHP: Global string navigation for class, method and function syntax</li>
         <li>JSON plugin references extract from Symfony Plugin: schema see <a href="https://github.com/Haehnchen/idea-php-toolbox">README</a></li>
         <li>Basic json files for: Behat, PHPUnit, Doctrine, Symfony, Twig and PHP Core</li>
-        <li>Json REST-Server inside PhpStorm</li>
 
     ]]></description>
 
-  <change-notes><![CDATA[
-    <ul>
-      <li>Fix PhpDoc hashes don't work for constructor parameters <a href="https://github.com/Haehnchen/idea-php-toolbox/issues/74">#74</a> <a href="https://github.com/Haehnchen/idea-php-toolbox/issues/50">#50</a> @podhy</li>
-    </ul>
-
-    <br/>
-
-    <a href="https://github.com/Haehnchen/idea-php-toolbox/blob/master/CHANGELOG.md">see full changelog</a> | <a href="https://www.paypal.me/DanielEspendiller">Donate</a>
-    ]]>
-  </change-notes>
-
-  <idea-version since-build="171.3780"/>
+  <idea-version since-build="223"/>
 
   <depends>com.jetbrains.twig</depends>
   <depends>com.jetbrains.php</depends>
@@ -51,15 +39,14 @@
   -->
 
   <extensions defaultExtensionNs="com.jetbrains.php">
+      <!--
     <typeProvider3 implementation="de.espend.idea.php.toolbox.type.PhpToolboxTypeProvider"/>
+      -->
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
 
-    <applicationConfigurable instance="de.espend.idea.php.toolbox.ui.application.ToolboxApplicationForm"
-                             displayName="PHP Toolbox"
-                             groupId="language"
-                             id="PhpToolbox.ApplicationForm"/>
+    <applicationService serviceImplementation="de.espend.idea.php.toolbox.PhpToolboxApplicationService" />
 
     <gotoDeclarationHandler implementation="de.espend.idea.php.toolbox.navigation.PhpToolboxGotoDeclarationHandler"/>
     <completion.contributor language="any" implementationClass="de.espend.idea.php.toolbox.completion.ToolboxCompletionContributor"/>
@@ -69,16 +56,15 @@
 
     <gotoDeclarationHandler implementation="de.espend.idea.php.toolbox.gotoCompletion.PhpGotoDeclarationHandler"/>
     <completion.contributor language="PHP" implementationClass="de.espend.idea.php.toolbox.gotoCompletion.PhpGotoDeclarationHandler"/>
-
   </extensions>
 
   <extensionPoints>
-    <extensionPoint name="extension.PhpToolboxProviderInterface" interface="de.espend.idea.php.toolbox.extension.PhpToolboxProviderInterface"/>
-    <extensionPoint name="extension.SourceContributorInterface" interface="de.espend.idea.php.toolbox.extension.SourceContributorInterface"/>
-    <extensionPoint name="extension.LanguageRegistrarMatcher" interface="de.espend.idea.php.toolbox.extension.LanguageRegistrarMatcherInterface"/>
-    <extensionPoint name="extension.PhpToolboxTargetLocator" interface="de.espend.idea.php.toolbox.extension.PhpToolboxTargetLocator"/>
-    <extensionPoint name="extension.ToolboxJsonFileCompletion" interface="de.espend.idea.php.toolbox.extension.ToolboxJsonFileCompletion"/>
-    <extensionPoint name="extension.JsonStreamResource" interface="de.espend.idea.php.toolbox.extension.JsonStreamResource"/>
+    <extensionPoint dynamic="true" name="extension.PhpToolboxProviderInterface" interface="de.espend.idea.php.toolbox.extension.PhpToolboxProviderInterface"/>
+    <extensionPoint dynamic="true" name="extension.SourceContributorInterface" interface="de.espend.idea.php.toolbox.extension.SourceContributorInterface"/>
+    <extensionPoint dynamic="true" name="extension.LanguageRegistrarMatcher" interface="de.espend.idea.php.toolbox.extension.LanguageRegistrarMatcherInterface"/>
+    <extensionPoint dynamic="true" name="extension.PhpToolboxTargetLocator" interface="de.espend.idea.php.toolbox.extension.PhpToolboxTargetLocator"/>
+    <extensionPoint dynamic="true" name="extension.ToolboxJsonFileCompletion" interface="de.espend.idea.php.toolbox.extension.ToolboxJsonFileCompletion"/>
+    <extensionPoint dynamic="true" name="extension.JsonStreamResource" interface="de.espend.idea.php.toolbox.extension.JsonStreamResource"/>
   </extensionPoints>
 
     <extensions defaultExtensionNs="de.espend.idea.php.toolbox.extension">
@@ -107,25 +93,5 @@
 
         <JsonStreamResource implementation="de.espend.idea.php.toolbox.provider.InternalJsonStreamResource"/>
     </extensions>
-
-    <application-components>
-        <component>
-            <implementation-class>de.espend.idea.php.toolbox.PhpToolboxApplicationService</implementation-class>
-        </component>
-
-        <component>
-            <implementation-class>de.espend.idea.php.toolbox.remote.RemoteListenerComponent</implementation-class>
-        </component>
-    </application-components>
-
-    <project-components>
-        <component>
-            <implementation-class>de.espend.idea.php.toolbox.PhpToolboxProjectComponent</implementation-class>
-        </component>
-    </project-components>
-
-  <actions>
-    <!-- Add your actions here -->
-  </actions>
 
 </idea-plugin>
